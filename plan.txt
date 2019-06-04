@@ -1,0 +1,11 @@
+Train.py:
+- import files
+- preprocessing
+- iterate through the residue sequence:
+   for all residues:
+	predict structure
+- refine predictions
+- ranges
+
+Residue features as vectors (angles, H-bonds, distances, ...)
+	-> Train NNs
