@@ -9,3 +9,9 @@ Train.py:
 
 Residue features as vectors (angles, H-bonds, distances, ...)
 	-> Train NNs
+	
+	
+H-bonds as feature: 
+	1. add missing hydrogen atoms (Lecture 8. Modeling of Proteins III)
+	2. DSSP (Lecture 9. Protein Structure Prediction I)
+	3. area diversity 

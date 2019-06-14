@@ -1,6 +1,7 @@
 from Bio.PDB import *
 import os
 import numpy as np
+import dssp
 
 
 AMINO_ACIDS = ['ALA', 'GLY', 'PHE', 'ILE', 'MET', 'LEU', 'PRO', 'VAL', 'ASP', 'GLU', 'LYS', 'ARG', 'SER', 'THR', 'TYR',
@@ -185,6 +186,9 @@ def main():
                 if residue.get_resname() in AMINO_ACIDS:
                     residues.append(residue)
         break
+    
+    # save the H coordinates in list
+    h_coord_per_res = []
 
 
     # Extract Amino Acid and Amino Acid one later
@@ -223,10 +227,15 @@ def main():
         psi_angle = dihedral_angle(residues[k]['N'].get_coord(), residues[k]['CA'].get_coord(),
                                    residues[k]['C'].get_coord(), residues[k+1]['N'].get_coord())
 
-        print([phi_angle, psi_angle, calculate_h(np.array(o_coord), np.array(c_coord), np.array(c_alpha_coord),
-                                                np.array(n_coord))])
+        #print([phi_angle, psi_angle, calculate_h(np.array(o_coord), np.array(c_coord), np.array(c_alpha_coord),
+         #                                       np.array(n_coord))])
 
+        h_coord_per_res.append(calculate_h(np.array(o_coord), np.array(c_coord), np.array(c_alpha_coord),
+                                                np.array(n_coord)))
+         
         #break
+    dssp.dssp(residues, h_coord_per_res) 
+        
 
 
 if __name__ == '__main__':
