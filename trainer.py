@@ -1,7 +1,7 @@
 from Bio.PDB import *
 import os
 import numpy as np
-import dssp
+import h_bonds_calculator
 
 
 AMINO_ACIDS = ['ALA', 'GLY', 'PHE', 'ILE', 'MET', 'LEU', 'PRO', 'VAL', 'ASP', 'GLU', 'LYS', 'ARG', 'SER', 'THR', 'TYR',
@@ -234,7 +234,8 @@ def main():
                                                 np.array(n_coord)))
          
         #break
-    dssp.dssp(residues, h_coord_per_res) 
+    h_bonds = h_bonds_calculator.get_bonds(residues, h_coord_per_res) 
+    print(h_bonds)
         
 
 
