@@ -6,7 +6,7 @@ from scipy.constants import epsilon_0
 
 __q_plus__ = 0.42
 __q_minus__ = -0.2
-__threshold__ = -2.4 
+__threshold__ = -2.5 
 
 
 ## todo delete later 
@@ -35,7 +35,7 @@ def dssp(residues, h_coord):
     print("n", n_res)
     print("n_H", len(h_coord))
     energy = pairwise_e(residues, h_coord)
-    #print(energy[0])
+    print(energy)
     #print(energy[2])
     h_bonds = np.zeros(n_res)
     
@@ -73,9 +73,9 @@ def pairwise_e(residues, h_coord):
                 r_ch = calculate_distance(res1["C"], h_coord[j-1])
                 r_oh = calculate_distance(res1["O"], h_coord[j-1])
                 r_cn = res1["C"] - res2["N"]
-                energy[i][j] = get_energy(r_on, 1,1, r_cn)
+                energy[i][j] = get_energy(r_on, r_ch, r_oh, r_cn)
                 energy[j][i] = energy[i][j]
-                #print("d", r_on, r_cn)
+                #print("d", r_on, r_ch, r_oh, r_cn)
 
     return energy
 
@@ -83,7 +83,7 @@ def pairwise_e(residues, h_coord):
 def get_energy(r_on, r_ch, r_oh, r_cn):
     
     return (__q_plus__*__q_minus__*(1/r_on + 1/r_ch - 1/r_oh - 1/r_cn))/(4*pi*epsilon_0)
-    
+    #return 0.084*((1/r_on) + (1/r_ch) - (1/r_oh) - (1/r_cn))*332
 
 def calculate_distance(atom, h_atom):
     p1 = np.array((list(atom.get_vector())))
