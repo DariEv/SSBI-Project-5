@@ -13,7 +13,7 @@ def get_bonds(residues, h_coord):
     print("n", n_res)
     print("n_H", len(h_coord))
     energy = pairwise_e(residues, h_coord)
-    print(energy)
+    #print(energy)
     #print(energy[2])
     h_bonds = np.zeros(n_res)
     
