@@ -8,31 +8,13 @@ __threshold__ = -0.5
 
 
 def get_bonds(residues, h_coord):
-    
+
     n_res = len(residues)
     print("n", n_res)
     print("n_H", len(h_coord))
-    energy = pairwise_e(residues, h_coord)
-    #print(energy)
-    #print(energy[2])
-    h_bonds = np.zeros(n_res)
     
-    for i in range(n_res):
-        j = np.argmin(energy[i])
-        if energy[i][j] < __threshold__:
-            h_bonds[i] = abs(i - j)
-    
-    return h_bonds
-
-
-def pairwise_e(residues, h_coord):
-    
-    #print(h_coord[0], "----")
-    #print(np.array((list(residues[1]["N"].get_vector()))), "3333")
-    #print(calculate_distance(residues[1]["N"], h_coord[0]))
-    
-    n_res = len(residues)
     energy = np.zeros((n_res, n_res))
+    h_bonds = np.zeros(n_res)
     
     for i in range(n_res):
         for j in range(i + 3, n_res):
@@ -49,8 +31,12 @@ def pairwise_e(residues, h_coord):
                 energy[i][j] = get_energy(r_on, r_ch, r_oh, r_cn)
                 energy[j][i] = energy[i][j]
                 #print("d", r_on, r_ch, r_oh, r_cn)
+        
+        k = np.argmin(energy[i])
+        if energy[i][k] < __threshold__:
+            h_bonds[i] = abs(i - k)
 
-    return energy
+    return h_bonds
 
 
 def get_energy(r_on, r_ch, r_oh, r_cn):
@@ -59,22 +45,9 @@ def get_energy(r_on, r_ch, r_oh, r_cn):
 
 
 def calculate_distance(atom, h_atom):
+    
     p1 = np.array((list(atom.get_vector())))
     p2 = h_atom
     
     return np.linalg.norm(p1-p2)
-
-# The program starts here:
-
-#def main():
-    #print("DSSP")
-    #res = import_pdb()
-    #print(pairwise_e(res))
-    #print(dssp(res))
-    
-
-#if __name__ == "__main__":
-    #main()
-    
-    
     
