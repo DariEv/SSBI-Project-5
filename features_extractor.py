@@ -25,8 +25,13 @@ class FeatureExtractor:
         for f in os.listdir(self.path2dir):
             
             residues = self.parse_pdb_file(f)
+
+            parsed_structures = self.parse_structures(self.path2dir+f)
+
+            structures = self.get_structures(residues, parsed_structures)
                         
-            # iterate through residues 
+            # iterate through residues
+
             features, h_coords = self.get_initial_features(residues)
             #print(features)
             #print(h_coords)
@@ -34,15 +39,13 @@ class FeatureExtractor:
             h_bonds = h_bonds_calculator.get_bonds(residues, h_coords) 
             #print(h_bonds)
             
-            # add H-bond to the end of feautre vector
-            features = list(zip(features, h_bonds))
-            features = [i[0] + [i[1]] for i in features]
-            #print(features)
+            # feature vector: [phi, psi, distance (h-bonds), structure]
+            features = list(zip(features, h_bonds, structures))
+            features = [i[0] + [i[1]] + [i[2]] for i in features]
             
             all_features = all_features + features
             
-        #print(all_features)
-        print(len(all_features))
+        print(all_features)
         
         return all_features
             
@@ -62,6 +65,72 @@ class FeatureExtractor:
             break
         
         return residues
+
+
+    def parse_structures(self, file):
+
+        with open(file) as f:
+
+            parsed_structures = []
+
+            temp = ''
+            for line in f:
+                if line[:6] == 'HELIX ':
+                    helix_type = int(line[38:40])
+                    if helix_type == 1:     # alpha
+                        type = 1
+                    elif helix_type == 5:   # 310
+                        type = 2
+                    elif helix_type == 3:   # pi
+                        type = 3
+                    for i in range(int(line[21:25]), int(line[33:37]) + 1):
+                        parsed_structures.append([i, line[19], type])
+                if line[:6] == 'SHEET ':
+                    sheet_type = int(line[38:40])
+                    if sheet_type == 1:     # parallel sheet
+                        type = 4
+                    elif sheet_type == -1:  # anti-parallel sheet
+                        type = 5
+                    if sheet_type == 0:
+                        temp = line
+                    else:
+                        if temp != '':
+                            for i in range(int(temp[22:26]), int(temp[33:37]) + 1):
+                                parsed_structures.append([i, temp[21], type])
+                            temp = ''
+                        for i in range(int(line[22:26]), int(line[33:37]) + 1):
+                            parsed_structures.append([i, line[21], type])
+
+        return parsed_structures
+
+
+    def get_structures(self, residues, parsed_structures):
+
+        structures = []
+
+        for k, amino_acid in enumerate(residues):
+
+            if k == len(residues) - 1:
+                break
+
+            feature_vector = []
+
+            # print(amino_acid.get_id()[1])
+            aas_helix_sheet = [a[0] for a in parsed_structures]
+            # print(aas_helix_sheet)
+            if residues[k].get_id()[1] in aas_helix_sheet:
+                res = []
+                # res = [p for p in parsed_structures if int(p[0]) == int(amino_acid.get_id()[1]) and p[1] == amino_acid.get_parent().get_id()]
+                for p in parsed_structures:
+                    if int(p[0]) == int(residues[k].get_id()[1]):
+                        res.append(p)
+                # print(amino_acid.get_parent().get_id())
+                if len(res) > 0:
+                    structures.append(res[0][2])
+            else:
+                structures.append(0)
+
+        return structures
     
     
     def get_initial_features(self, residues):
@@ -107,9 +176,7 @@ class FeatureExtractor:
     
             psi_angle = dihedral_angle(residues[k]['N'].get_coord(), residues[k]['CA'].get_coord(),
                                        residues[k]['C'].get_coord(), residues[k+1]['N'].get_coord())
-    
-            #print([phi_angle, psi_angle, ssbi_project_h_atoms.calculate_h(np.array(o_coord), np.array(c_coord), np.array(c_alpha_coord),
-             #                                       np.array(n_coord))])
+
     
             features_per_res.append([phi_angle, psi_angle])
             
@@ -137,8 +204,11 @@ def dihedral_angle(c1, c2, c3, c4):
 
     # Compute the degree of the angle
     angle = np.degrees(np.arctan2((np.dot(v1v2_x_v2v3, v2) * (1.0/np.linalg.norm(v2))), np.dot(v1_v2, v2_v3)))
+
+    #angle = calc_dihedral(c1, c2, c3, c4)
+
     return (angle)                                                
-    
+
 
 # testing 
 fe = FeatureExtractor("supplementary_small/")
