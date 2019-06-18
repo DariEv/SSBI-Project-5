@@ -23,31 +23,85 @@ class FeatureExtractor:
         #  iterate through files
         
         for f in os.listdir(self.path2dir):
-            
+
+            # list of all residues
             residues = self.parse_pdb_file(f)
 
+            # get structures given in the PDB file
             parsed_structures = self.parse_structures(self.path2dir+f)
-
             structures = self.get_structures(residues, parsed_structures)
-                        
-            # iterate through residues
 
-            features, h_coords = self.get_initial_features(residues)
-            #print(features)
-            #print(h_coords)
+            # encode the residues in 20-bit vectors
+            aas_encoded = self.aas_encoded(residues)
             
-            h_bonds = h_bonds_calculator.get_bonds(residues, h_coords) 
-            #print(h_bonds)
+            features, h_coords = self.get_initial_features(residues)
+            
+            h_bonds = h_bonds_calculator.get_bonds(residues, h_coords)
             
             # feature vector: [phi, psi, distance (h-bonds), structure]
-            features = list(zip(features, h_bonds, structures))
-            features = [i[0] + [i[1]] + [i[2]] for i in features]
+            features = list(zip(aas_encoded, features, h_bonds, structures))
+            features = [i[0] + i[1] + [i[2]] + [i[3]] for i in features]
             
             all_features = all_features + features
             
         print(all_features)
         
         return all_features
+
+
+    def aas_encoded(self, residues):
+
+        aas_encoded = []
+
+        for residue in [r.get_resname() for r in residues]:
+
+            aacode = []
+
+            if residue == 'ALA':
+                aacode = [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+            elif residue == 'GLY':
+                aacode = [0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+            elif residue == 'PHE':
+                aacode = [0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+            elif residue == 'ILE':
+                aacode = [0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+            elif residue == 'MET':
+                aacode = [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+            elif residue == 'LEU':
+                aacode = [0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+            elif residue == 'PRO':
+                aacode = [0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+            elif residue == 'VAL':
+                aacode = [0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+            elif residue == 'ASP':
+                aacode = [0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+            elif residue == 'GLU':
+                aacode = [0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+            elif residue == 'LYS':
+                aacode = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+            elif residue == 'ARG':
+                aacode = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0]
+            elif residue == 'SER':
+                aacode = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0]
+            elif residue == 'THR':
+                aacode = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0]
+            elif residue == 'TYR':
+                aacode = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0]
+            elif residue == 'HIS':
+                aacode = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0]
+            elif residue == 'CYS':
+                aacode = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0]
+            elif residue == 'ASN':
+                aacode = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0]
+            elif residue == 'GLN':
+                aacode = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0]
+            elif residue == 'TRP':
+                aacode = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1]
+
+            aas_encoded.append(aacode)
+
+        return aas_encoded
+
             
             
     def parse_pdb_file(self, file):
@@ -177,9 +231,9 @@ class FeatureExtractor:
             psi_angle = dihedral_angle(residues[k]['N'].get_coord(), residues[k]['CA'].get_coord(),
                                        residues[k]['C'].get_coord(), residues[k+1]['N'].get_coord())
 
-    
+
             features_per_res.append([phi_angle, psi_angle])
-            
+
             h_coord_per_res.append(ssbi_project_h_atoms.calculate_h(np.array(o_coord), 
                                                                     np.array(c_coord), 
                                                                     np.array(c_alpha_coord), 
