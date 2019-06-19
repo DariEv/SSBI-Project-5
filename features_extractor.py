@@ -49,7 +49,7 @@ class FeatureExtractor:
             
             h_bonds = h_bonds_calculator.get_bonds(residues, h_coords)
             
-            envs, diversities = self.get_environment_features(h_bonds)
+            envs, diversities, seg_lengths = self.get_environment_features(h_bonds)
 
             # feature vector: 
             #[encoded residue name, isoelectric point (pI), hydrophobicity, phi, psi, distance (h-bonds), structure]
@@ -61,10 +61,12 @@ class FeatureExtractor:
                 tmp_vec = np.append(np.concatenate((aas_init[i], np.array(angles[i])),axis=0),h_bonds[i])
                 tmp_vec = np.concatenate((tmp_vec, np.array(envs[i])),axis=0)
                 tmp_vec = np.append(tmp_vec, diversities[i])
+                tmp_vec = np.append(tmp_vec, seg_lengths[i])
                 features.append(tmp_vec)
 
             all_features = all_features + features
             all_structures = all_structures + structures
+
             
         print(all_features)
         print(all_structures)
@@ -332,8 +334,14 @@ class FeatureExtractor:
     def get_environment_features(self, h_bonds):
         
         n = len(h_bonds)
-        envs = []
+        
+        # env = verctor of h_bond distances around the residue
+        # diversities = number of different h_bond distances around the residue
+        # segment_lengths = sum of distances to the left and right 0's
+        
+        envs = []  
         diversities = []
+        segment_lengths = []
         
         for i, bond in enumerate(h_bonds):
             
@@ -345,14 +353,10 @@ class FeatureExtractor:
             
             
             if left_range < 0:
-                left_offset = np.zeros(abs(left_range))
-                #print(left_range, right_range)
-                #print("off", left_offset)
+                left_offset = np.zeros(abs(left_range))            
                 left_range = 0
             if right_range > n:
-                right_offset = np.zeros(right_range - n + 1)
-                #print(left_range, right_range)
-                #print("off", right_offset)
+                right_offset = np.zeros(right_range - n + 1)               
                 right_range = n - 1
                 
             env = np.append(left_offset, h_bonds[left_range : right_range])
@@ -360,17 +364,27 @@ class FeatureExtractor:
                 
             diversity = len(collections.Counter(env))
             
-            # legment length feature: TODO
-            if bond == 0:
-                segment_length = 0
-            else:
-                left_segment = h_bonds[0:i]
-                right_segment = h_bonds[i+1:]
+            # legment length feature
+            segment_length = 0
             
+            if bond != 0:
+
+                # to the left 
+                counter = i
+                while counter > 0 and h_bonds[counter] != 0:
+                    segment_length = segment_length + 1
+                    counter = counter - 1
+                # to the right 
+                counter = i
+                while counter < n and h_bonds[counter] != 0:
+                    segment_length = segment_length + 1
+                    counter = counter + 1
+                    
+            segment_lengths.append(segment_length)
             envs.append(env)
             diversities.append(diversity)
             
-        return envs, diversities
+        return envs, diversities, segment_lengths
 
 
 # TODO: replace with PDB function                                           
