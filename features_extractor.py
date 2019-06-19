@@ -7,6 +7,7 @@ import sys
 import h_bonds_calculator
 import ssbi_project_h_atoms
 
+# Feature Vector: Amino Acid, Amino Acid Environment (Avg), Phy, Psi, H-Bond, Env (21 values), diversity, segment length
 
 WINDOW_SIZE = 10
 
@@ -66,8 +67,8 @@ class FeatureExtractor:
             all_features = all_features + features
             all_structures = all_structures + structures
             
-        print(all_features)
-        print(all_structures)
+        print(len(all_features))
+        print(len(all_structures))
         
         return all_features, all_structures
 
