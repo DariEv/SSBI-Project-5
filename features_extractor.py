@@ -32,14 +32,14 @@ class FeatureExtractor:
             structures = self.get_structures(residues, parsed_structures)
 
             # encode the residues in 20-bit vectors
-            aas_encoded = self.aas_encoded(residues)
-            
+            aas_init = self.aas_init(residues)
+
             features, h_coords = self.get_initial_features(residues)
             
             h_bonds = h_bonds_calculator.get_bonds(residues, h_coords)
             
-            # feature vector: [phi, psi, distance (h-bonds), structure]
-            features = list(zip(aas_encoded, features, h_bonds, structures))
+            # feature vector: [encoded residue name, isoelectric point (pI), hydrophobicity, phi, psi, distance (h-bonds), structure]
+            features = list(zip(aas_init, features, h_bonds, structures))
             features = [i[0] + i[1] + [i[2]] + [i[3]] for i in features]
             
             all_features = all_features + features
@@ -49,59 +49,100 @@ class FeatureExtractor:
         return all_features
 
 
-    def aas_encoded(self, residues):
+    def aas_init(self, residues):
 
-        aas_encoded = []
+        aas_init = []
 
         for residue in [r.get_resname() for r in residues]:
 
             aacode = []
+            pI = 0
+            h_phob = 0
 
             if residue == 'ALA':
                 aacode = [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+                pI = 6.00
+                h_phob = 0.62
             elif residue == 'GLY':
                 aacode = [0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+                pI = 5.97
+                h_phob = 0.48
             elif residue == 'PHE':
                 aacode = [0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+                pI = 5.48
+                h_phob = 1.19
             elif residue == 'ILE':
                 aacode = [0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+                pI = 6.02
+                h_phob = 1.38
             elif residue == 'MET':
                 aacode = [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+                pI = 5.74
+                h_phob = 0.64
             elif residue == 'LEU':
                 aacode = [0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+                pI = 5.98
+                h_phob = 1.06
             elif residue == 'PRO':
                 aacode = [0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+                pI = 6.30
+                h_phob = 0.12
             elif residue == 'VAL':
                 aacode = [0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+                pI = 5.96
+                h_phob = 1.08
             elif residue == 'ASP':
                 aacode = [0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+                pI = 2.77
+                h_phob = -0.90
             elif residue == 'GLU':
                 aacode = [0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+                pI = 3.22
+                h_phob = -0.74
             elif residue == 'LYS':
                 aacode = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+                pI = 9.74
+                h_phob = -1.50
             elif residue == 'ARG':
                 aacode = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0]
+                pI = 10.76
+                h_phob = -2.53
             elif residue == 'SER':
                 aacode = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0]
+                pI = 5.68
+                h_phob = -0.18
             elif residue == 'THR':
                 aacode = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0]
+                pI = 5.60
+                h_phob = -0.05
             elif residue == 'TYR':
                 aacode = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0]
+                pI = 5.66
+                h_phob = 0.26
             elif residue == 'HIS':
                 aacode = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0]
+                pI = 7.59
+                h_phob = -0.40
             elif residue == 'CYS':
                 aacode = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0]
+                pI = 5.07
+                h_phob = 0.29
             elif residue == 'ASN':
                 aacode = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0]
+                pI = 5.41
+                h_phob = -0.78
             elif residue == 'GLN':
                 aacode = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0]
+                pI = 5.65
+                h_phob = -0.85
             elif residue == 'TRP':
                 aacode = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1]
+                pI = 5.89
+                h_phob = 0.81
 
-            aas_encoded.append(aacode)
+            aas_init.append(aacode + [pI] + [h_phob])
 
-        return aas_encoded
-
+        return aas_init
             
             
     def parse_pdb_file(self, file):
@@ -129,6 +170,8 @@ class FeatureExtractor:
 
             temp = ''
             for line in f:
+                if line[:6] == 'ENDMDL':  # stop after the first model of the structure
+                    break
                 if line[:6] == 'HELIX ':
                     helix_type = int(line[38:40])
                     if helix_type == 1:     # alpha
@@ -167,18 +210,10 @@ class FeatureExtractor:
             if k == len(residues) - 1:
                 break
 
-            feature_vector = []
-
-            # print(amino_acid.get_id()[1])
             aas_helix_sheet = [a[0] for a in parsed_structures]
-            # print(aas_helix_sheet)
-            if residues[k].get_id()[1] in aas_helix_sheet:
-                res = []
-                # res = [p for p in parsed_structures if int(p[0]) == int(amino_acid.get_id()[1]) and p[1] == amino_acid.get_parent().get_id()]
-                for p in parsed_structures:
-                    if int(p[0]) == int(residues[k].get_id()[1]):
-                        res.append(p)
-                # print(amino_acid.get_parent().get_id())
+
+            if amino_acid.get_id()[1] in aas_helix_sheet:
+                res = [p for p in parsed_structures if int(p[0]) == int(amino_acid.get_id()[1])]
                 if len(res) > 0:
                     structures.append(res[0][2])
             else:
@@ -240,6 +275,7 @@ class FeatureExtractor:
                                                                     np.array(n_coord)))
             
         return features_per_res, h_coord_per_res
+
 
 # TODO: replace with PDB function                                           
 # Calculate dihedral angle
