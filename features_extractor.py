@@ -19,10 +19,13 @@ class FeatureExtractor:
     def __init__(self, p = ""):
         self.path2dir = p
         
+        self.features, self.labels = self.get_features()
+        
         
     def get_features(self):
         
         all_features = []
+        all_structures = []
         
         #  iterate through files
         
@@ -42,19 +45,21 @@ class FeatureExtractor:
             
             h_bonds = h_bonds_calculator.get_bonds(residues, h_coords)
             
-			
-            env_feature = self.get_environment_features(h_bonds)
-            print(env_feature)
             
-            # feature vector: [encoded residue name, isoelectric point (pI), hydrophobicity, phi, psi, distance (h-bonds), structure]
-            features = list(zip(aas_init, features, h_bonds, structures))
-            features = [i[0] + i[1] + [i[2]] + [i[3]] for i in features]
+            envs, diversities = self.get_environment_features(h_bonds)
+            
+            # feature vector: 
+            #[encoded residue name, isoelectric point (pI), hydrophobicity, phi, psi, distance (h-bonds), structure]
+            features = list(zip(aas_init, features, h_bonds, envs, diversities))
+            features = [i[0] + i[1] + [i[2]] + [i[3]] + [i[4]] for i in features]
             
             all_features = all_features + features
+            all_structures = all_structures + structures
             
         print(all_features)
+        print(all_structures)
         
-        return all_features
+        return all_features, all_structures
 
 
     def aas_init(self, residues):
@@ -288,32 +293,38 @@ class FeatureExtractor:
     def get_environment_features(self, h_bonds):
         
         n = len(h_bonds)
-        env_features = []
+        envs = []
+        diversities = []
         
         for i, bond in enumerate(h_bonds):
             
-            left_range = i - WINDOW_SIZE
+            left_range = i - WINDOW_SIZE - 1
             right_range = i + WINDOW_SIZE
             
             left_offset = []
             right_offset = []
             
+            
             if left_range < 0:
-                left_offset = list(np.full(abs(left_range), np.nan))
-                print(left_offset)
+                left_offset = np.full(abs(left_range), np.nan)
+                #print(left_range, right_range)
+                #print("off", left_offset)
                 left_range = 0
             if right_range > n:
-                right_offset = list(np.full(right_range, np.nan))
-                print(right_offset)
+                right_offset = np.full(right_range - n + 1, np.nan)
+                #print(left_range, right_range)
+                #print("off", right_offset)
                 right_range = n - 1
                 
-            env = h_bonds[left_range : right_range]
+            env = np.append(left_offset, h_bonds[left_range : right_range])
+            env = np.append(env, right_offset)
                 
             diversity = len(collections.Counter(env))
             
-            env_features.append([env, diversity])
+            envs.append(env)
+            diversities.append(diversity)
             
-        return env_features
+        return envs, diversities
 
 
 # TODO: replace with PDB function                                           
@@ -342,7 +353,7 @@ def dihedral_angle(c1, c2, c3, c4):
 # testing 
 fe = FeatureExtractor("supplementary_small/")
 print(fe.path2dir)
-fe.get_features()
+#fe.get_features()
 
 
 
