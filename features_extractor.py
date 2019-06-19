@@ -22,13 +22,13 @@ class FeatureExtractor:
     def __init__(self, p = ""):
         self.path2dir = p
         
-        self.features, self.labels = self.get_features()
+        self.features, self.labels_q6, self.labels_q3 = self.get_features()
         
         
     def get_features(self):
         
         all_features = []
-        all_structures = []
+        all_structures_q6 = []
         
         #  iterate through files
         
@@ -67,13 +67,22 @@ class FeatureExtractor:
                 features.append(tmp_vec)
 
             all_features = all_features + features
-            all_structures = all_structures + structures
+            all_structures_q6 = all_structures_q6 + structures
 
             
         print(len(all_features))
-        print(len(all_structures))
-        
-        return all_features, all_structures
+        print(len(all_structures_q6))
+
+        all_structures_q3 = []
+        for struct in all_structures_q6:
+            if struct in [1,2,3]:
+                all_structures_q3.append(1)
+            elif struct in [4,5]:
+                all_structures_q3.append(2)
+            else:
+                all_structures_q3.append(struct)
+
+        return all_features, all_structures_q6, all_structures_q3
 
 
     def aa_environment(self, aas_init):
@@ -261,9 +270,6 @@ class FeatureExtractor:
 
         for k, amino_acid in enumerate(residues):
 
-            if k == len(residues) - 1:
-                break
-
             aas_helix_sheet = [a[0] for a in parsed_structures]
 
             if amino_acid.get_id()[1] in aas_helix_sheet:
@@ -418,12 +424,12 @@ def main():
     output_file = "Extracted_Features.pkl"
     
 # =============================================================================
-#     with open(output_file, 'wb') as output:
-#         
-#         fe = FeatureExtractor(input_file)
-#         print("Extracting features for the files in:", fe.path2dir)
-#         print("Write results in:")
-#         pickle.dump(fe, output, pickle.HIGHEST_PROTOCOL)
+    with open(output_file, 'wb') as output:
+
+        fe = FeatureExtractor(input_file)
+        print("Extracting features for the files in:", fe.path2dir)
+        print("Write results in:")
+        pickle.dump(fe, output, pickle.HIGHEST_PROTOCOL)
 # =============================================================================
         
         
@@ -432,7 +438,8 @@ def main():
     with open(output_file, 'rb') as input:
         saved_features = pickle.load(input)
         print(saved_features.features) 
-        print(saved_features.labels)
+        print(saved_features.labels_q6)
+        print(saved_features.labels_q3)
    
     
 if __name__ == '__main__':
