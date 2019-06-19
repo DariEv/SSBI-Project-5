@@ -14,7 +14,7 @@ def get_bonds(residues, h_coord):
     print("n_H", len(h_coord))
     
     energy = np.zeros((n_res, n_res))
-    h_bonds = np.zeros(n_res)
+    h_bonds = np.full(n_res, np.nan) #np.zeros(n_res)
     
     for i in range(n_res):
         for j in range(i + 3, n_res):
@@ -50,4 +50,4 @@ def calculate_distance(atom, h_atom):
     p2 = h_atom
     
     return np.linalg.norm(p1-p2)
-    
+

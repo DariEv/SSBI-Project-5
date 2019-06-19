@@ -1,9 +1,13 @@
 from Bio.PDB import *
 import numpy as np
 import os
+import collections
 
 import h_bonds_calculator
 import ssbi_project_h_atoms
+
+
+WINDOW_SIZE = 10
 
 
 AMINO_ACIDS = ['ALA', 'GLY', 'PHE', 'ILE', 'MET', 'LEU', 'PRO', 'VAL', 'ASP', 'GLU', 'LYS', 'ARG', 'SER', 'THR', 'TYR',
@@ -33,6 +37,9 @@ class FeatureExtractor:
             
             h_bonds = h_bonds_calculator.get_bonds(residues, h_coords) 
             #print(h_bonds)
+            
+            env_feature = self.get_environment_features(h_bonds)
+            print(env_feature)
             
             # add H-bond to the end of feautre vector
             features = list(zip(features, h_bonds))
@@ -119,6 +126,37 @@ class FeatureExtractor:
                                                                     np.array(n_coord)))
             
         return features_per_res, h_coord_per_res
+    
+    
+    def get_environment_features(self, h_bonds):
+        
+        n = len(h_bonds)
+        env_features = []
+        
+        for i, bond in enumerate(h_bonds):
+            
+            left_range = i - WINDOW_SIZE
+            right_range = i + WINDOW_SIZE
+            
+            left_offset = []
+            right_offset = []
+            
+            if left_range < 0:
+                left_offset = list(np.full(abs(left_range), np.nan))
+                print(left_offset)
+                left_range = 0
+            if right_range > n:
+                right_offset = list(np.full(right_range, np.nan))
+                print(right_offset)
+                right_range = n - 1
+                
+            env = left_offset + h_bonds[left_range : right_range] + right_offset
+                
+            diversity = len(collections.Counter(env))
+            
+            env_features.append([env, diversity])
+            
+        return env_features
 
 # TODO: replace with PDB function                                           
 # Calculate dihedral angle
@@ -144,7 +182,7 @@ def dihedral_angle(c1, c2, c3, c4):
 fe = FeatureExtractor("supplementary_small/")
 print(fe.path2dir)
 fe.get_features()
-    
+
 
 
 
