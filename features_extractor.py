@@ -45,6 +45,8 @@ class FeatureExtractor:
             
             h_bonds = h_bonds_calculator.get_bonds(residues, h_coords)
             
+            print(len(h_bonds), "h_bonds")
+            
             
             envs, diversities = self.get_environment_features(h_bonds)
             
@@ -306,12 +308,12 @@ class FeatureExtractor:
             
             
             if left_range < 0:
-                left_offset = np.full(abs(left_range), np.nan)
+                left_offset = np.zeros(abs(left_range))
                 #print(left_range, right_range)
                 #print("off", left_offset)
                 left_range = 0
             if right_range > n:
-                right_offset = np.full(right_range - n + 1, np.nan)
+                right_offset = np.zeros(right_range - n + 1)
                 #print(left_range, right_range)
                 #print("off", right_offset)
                 right_range = n - 1
@@ -320,6 +322,13 @@ class FeatureExtractor:
             env = np.append(env, right_offset)
                 
             diversity = len(collections.Counter(env))
+            
+            # legment length feature: TODO
+            if bond == 0:
+                segment_length = 0
+            else:
+                left_segment = h_bonds[0:i]
+                right_segment = h_bonds[i+1:]
             
             envs.append(env)
             diversities.append(diversity)
