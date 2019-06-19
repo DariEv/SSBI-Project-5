@@ -75,7 +75,7 @@ class FeatureExtractor:
         return all_features, all_structures
 
 
-    def aa_environment(self, aas_init, environ_length=10):
+    def aa_environment(self, aas_init):
         '''
         Expects a list of feature vectors, where each vector contains the 20 bit AA encoded features and the
         hydrophobicity and iso-electric point
@@ -86,10 +86,10 @@ class FeatureExtractor:
         aas = []
 
         for i, amino in enumerate(aas_init):
-            if i >= environ_length:
-                window = aas_init[i-environ_length:i+environ_length+1]
+            if i >= WINDOW_SIZE:
+                window = aas_init[i-WINDOW_SIZE:i+WINDOW_SIZE+1]
             else:
-                window = aas_init[:i+environ_length+1]
+                window = aas_init[:i+WINDOW_SIZE+1]
 
             sum = np.zeros((20))
             for aa in window:
