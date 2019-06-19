@@ -3,6 +3,7 @@ import numpy as np
 import os
 import collections
 import sys
+import pickle
 
 import h_bonds_calculator
 import ssbi_project_h_atoms
@@ -410,6 +411,28 @@ def dihedral_angle(c1, c2, c3, c4):
     return angle
 
 
-# testing 
-fe = FeatureExtractor("supplementary_small/")
-print(fe.path2dir)
+def main():  
+    
+    input_file = "supplementary_small/"
+    output_file = "Extracted_Features.pkl"
+    
+# =============================================================================
+#     with open(output_file, 'wb') as output:
+#         
+#         fe = FeatureExtractor(input_file)
+#         print("Extracting features for the files in:", fe.path2dir)
+#         print("Write results in:")
+#         pickle.dump(fe, output, pickle.HIGHEST_PROTOCOL)
+# =============================================================================
+        
+        
+    # open saved file
+    
+    with open(output_file, 'rb') as input:
+        saved_features = pickle.load(input)
+        print(saved_features.features) 
+        print(saved_features.labels)
+   
+    
+if __name__ == '__main__':
+    main()
