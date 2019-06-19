@@ -20,10 +20,13 @@ class FeatureExtractor:
     def __init__(self, p = ""):
         self.path2dir = p
         
+        self.features, self.labels = self.get_features()
+        
         
     def get_features(self):
         
         all_features = []
+        all_structures = []
         
         #  iterate through files
         
@@ -45,23 +48,25 @@ class FeatureExtractor:
             angles, h_coords = self.get_initial_features(residues)
             
             h_bonds = h_bonds_calculator.get_bonds(residues, h_coords)
+
             features = []
             for i in range(0,len(aas_init)):
                 features.append(np.append(np.concatenate((aas_init[i], np.array(angles[i])),axis=0),h_bonds[i]))
-            #########
-
-            env_feature = self.get_environment_features(h_bonds)
-            print(env_feature)
             
-            # feature vector: [encoded residue name, isoelectric point (pI), hydrophobicity, phi, psi, distance (h-bonds), structure]
-            features = list(zip(aas_init, features, h_bonds, structures))
-            features = [i[0] + i[1] + [i[2]] + [i[3]] for i in features]
+            envs, diversities = self.get_environment_features(h_bonds)
+
+            # feature vector: 
+            #[encoded residue name, isoelectric point (pI), hydrophobicity, phi, psi, distance (h-bonds), structure]
+            features = list(zip(aas_init, features, h_bonds, envs, diversities))
+            features = [i[0] + i[1] + [i[2]] + [i[3]] + [i[4]] for i in features]
             
             all_features = all_features + features
+            all_structures = all_structures + structures
             
         print(all_features)
+        print(all_structures)
         
-        return all_features
+        return all_features, all_structures
 
 
     def aa_environment(self, aas_init, environ_length=10):
@@ -324,32 +329,45 @@ class FeatureExtractor:
     def get_environment_features(self, h_bonds):
         
         n = len(h_bonds)
-        env_features = []
+        envs = []
+        diversities = []
         
         for i, bond in enumerate(h_bonds):
             
-            left_range = i - WINDOW_SIZE
+            left_range = i - WINDOW_SIZE - 1
             right_range = i + WINDOW_SIZE
             
             left_offset = []
             right_offset = []
             
+            
             if left_range < 0:
-                left_offset = list(np.full(abs(left_range), np.nan))
-                print(left_offset)
+                left_offset = np.zeros(abs(left_range))
+                #print(left_range, right_range)
+                #print("off", left_offset)
                 left_range = 0
             if right_range > n:
-                right_offset = list(np.full(right_range, np.nan))
-                print(right_offset)
+                right_offset = np.zeros(right_range - n + 1)
+                #print(left_range, right_range)
+                #print("off", right_offset)
                 right_range = n - 1
                 
-            env = h_bonds[left_range : right_range]
+            env = np.append(left_offset, h_bonds[left_range : right_range])
+            env = np.append(env, right_offset)
                 
             diversity = len(collections.Counter(env))
             
-            env_features.append([env, diversity])
+            # legment length feature: TODO
+            if bond == 0:
+                segment_length = 0
+            else:
+                left_segment = h_bonds[0:i]
+                right_segment = h_bonds[i+1:]
             
-        return env_features
+            envs.append(env)
+            diversities.append(diversity)
+            
+        return envs, diversities
 
 
 # TODO: replace with PDB function                                           
