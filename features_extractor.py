@@ -2,6 +2,7 @@ from Bio.PDB import *
 import numpy as np
 import os
 import collections
+import sys
 
 import h_bonds_calculator
 import ssbi_project_h_atoms
@@ -38,11 +39,17 @@ class FeatureExtractor:
             # encode the residues in 20-bit vectors
             aas_init = self.aas_init(residues)
 
-            features, h_coords = self.get_initial_features(residues)
+            aas_init = self.aa_environment(aas_init)
+
+            ##############################################
+            angles, h_coords = self.get_initial_features(residues)
             
             h_bonds = h_bonds_calculator.get_bonds(residues, h_coords)
-            
-			
+            features = []
+            for i in range(0,len(aas_init)):
+                features.append(np.append(np.concatenate((aas_init[i], np.array(angles[i])),axis=0),h_bonds[i]))
+            #########
+
             env_feature = self.get_environment_features(h_bonds)
             print(env_feature)
             
@@ -55,6 +62,32 @@ class FeatureExtractor:
         print(all_features)
         
         return all_features
+
+
+    def aa_environment(self, aas_init, environ_length=10):
+        '''
+        Expects a list of feature vectors, where each vector contains the 20 bit AA encoded features and the
+        hydrophobicity and iso-electric point
+        :param aas_init:
+        :return: average neighborhood
+        '''
+
+        aas = []
+
+        for i, amino in enumerate(aas_init):
+            if i >= environ_length:
+                window = aas_init[i-environ_length:i+environ_length+1]
+            else:
+                window = aas_init[:i+environ_length+1]
+
+            sum = np.zeros((20))
+            for aa in window:
+                sum = np.add(sum, aa[:20])
+
+            avg = sum/len(window)
+            aas.append(np.concatenate((np.append(amino[:20],avg),amino[20:])))
+
+        return aas
 
 
     def aas_init(self, residues):
@@ -148,7 +181,8 @@ class FeatureExtractor:
                 pI = 5.89
                 h_phob = 0.81
 
-            aas_init.append(aacode + [pI] + [h_phob])
+            #aas_init.append(aacode + [pI] + [h_phob])
+            aas_init.append(np.append(np.append(np.array(aacode), pI), h_phob))
 
         return aas_init
             
@@ -274,8 +308,10 @@ class FeatureExtractor:
             psi_angle = dihedral_angle(residues[k]['N'].get_coord(), residues[k]['CA'].get_coord(),
                                        residues[k]['C'].get_coord(), residues[k+1]['N'].get_coord())
 
-
+            if k == 0:
+                features_per_res.append([phi_angle, psi_angle])
             features_per_res.append([phi_angle, psi_angle])
+
 
             h_coord_per_res.append(ssbi_project_h_atoms.calculate_h(np.array(o_coord), 
                                                                     np.array(c_coord), 
@@ -336,13 +372,13 @@ def dihedral_angle(c1, c2, c3, c4):
 
     #angle = calc_dihedral(c1, c2, c3, c4)
 
-    return (angle)                                                
+    return angle
 
 
 # testing 
 fe = FeatureExtractor("supplementary_small/")
 print(fe.path2dir)
-fe.get_features()
+print(fe.get_features()[0])
 
 
 
