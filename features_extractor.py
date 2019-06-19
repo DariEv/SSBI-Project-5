@@ -150,7 +150,7 @@ class FeatureExtractor:
                 print(right_offset)
                 right_range = n - 1
                 
-            env = left_offset + h_bonds[left_range : right_range] + right_offset
+            env = h_bonds[left_range : right_range]
                 
             diversity = len(collections.Counter(env))
             
