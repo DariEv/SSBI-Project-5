@@ -48,18 +48,21 @@ class FeatureExtractor:
             angles, h_coords = self.get_initial_features(residues)
             
             h_bonds = h_bonds_calculator.get_bonds(residues, h_coords)
-
-            features = []
-            for i in range(0,len(aas_init)):
-                features.append(np.append(np.concatenate((aas_init[i], np.array(angles[i])),axis=0),h_bonds[i]))
             
             envs, diversities = self.get_environment_features(h_bonds)
 
             # feature vector: 
             #[encoded residue name, isoelectric point (pI), hydrophobicity, phi, psi, distance (h-bonds), structure]
-            features = list(zip(aas_init, features, h_bonds, envs, diversities))
-            features = [i[0] + i[1] + [i[2]] + [i[3]] + [i[4]] for i in features]
-            
+            #features = list(zip(aas_init, features, h_bonds, envs, diversities))
+            #features = [i[0] + i[1] + [i[2]] + [i[3]] + [i[4]] for i in features]
+
+            features = []
+            for i in range(0,len(aas_init)):
+                tmp_vec = np.append(np.concatenate((aas_init[i], np.array(angles[i])),axis=0),h_bonds[i])
+                tmp_vec = np.concatenate((tmp_vec, np.array(envs[i])),axis=0)
+                tmp_vec = np.append(tmp_vec, diversities[i])
+                features.append(tmp_vec)
+
             all_features = all_features + features
             all_structures = all_structures + structures
             
@@ -396,13 +399,3 @@ def dihedral_angle(c1, c2, c3, c4):
 # testing 
 fe = FeatureExtractor("supplementary_small/")
 print(fe.path2dir)
-print(fe.get_features()[0])
-
-
-
-
-
-
-    
-        
-    
