@@ -22,13 +22,14 @@ class FeatureExtractor:
     def __init__(self, p = ""):
         self.path2dir = p
         
-        self.features, self.labels_q6, self.labels_q3 = self.get_features()
+        self.features, self.labels_q6, self.labels_q3, self.peptide_lengths = self.get_features()
         
         
     def get_features(self):
         
         all_features = []
         all_structures_q6 = []
+        peptide_lengths = []
         
         #  iterate through files
         
@@ -68,8 +69,8 @@ class FeatureExtractor:
 
             all_features = all_features + features
             all_structures_q6 = all_structures_q6 + structures
+            peptide_lengths.append(sum(peptide_lengths) + len(features))
 
-            
         print(len(all_features))
         print(len(all_structures_q6))
 
@@ -82,7 +83,7 @@ class FeatureExtractor:
             else:
                 all_structures_q3.append(struct)
 
-        return all_features, all_structures_q6, all_structures_q3
+        return all_features, all_structures_q6, all_structures_q3, peptide_lengths
 
 
     def aa_environment(self, aas_init):
@@ -395,7 +396,6 @@ class FeatureExtractor:
         return envs, diversities, segment_lengths
 
 
-# TODO: replace with PDB function                                           
 # Calculate dihedral angle
 def dihedral_angle(c1, c2, c3, c4):
 
@@ -422,16 +422,15 @@ def main():
     
     input_file = "supplementary_small/"
     output_file = "Extracted_Features.pkl"
-    
-# =============================================================================
+
+    # save features to file
+
     with open(output_file, 'wb') as output:
 
         fe = FeatureExtractor(input_file)
         print("Extracting features for the files in:", fe.path2dir)
         print("Write results in:")
         pickle.dump(fe, output, pickle.HIGHEST_PROTOCOL)
-# =============================================================================
-        
         
     # open saved file
     
