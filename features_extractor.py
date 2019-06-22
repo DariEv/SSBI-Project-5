@@ -53,7 +53,7 @@ class FeatureExtractor:
         self.max_seg_length = -np.inf
         #######################################
         
-        self.features, self.labels_q6, self.labels_q3 = self.get_features()
+        self.features, self.labels_q6, self.labels_q3, self.peptide_lengths = self.get_features()
 
         self.normalized_features = self.__normalize()
         
@@ -61,6 +61,7 @@ class FeatureExtractor:
         
         all_features = []
         all_structures_q6 = []
+        peptide_lengths = []
         
         #  iterate through files
         
@@ -132,6 +133,7 @@ class FeatureExtractor:
 
             all_features = all_features + features
             all_structures_q6 = all_structures_q6 + structures
+            peptide_lengths.append(sum(peptide_lengths) + len(all_features))
 
             
         #print(len(all_features))
@@ -146,7 +148,7 @@ class FeatureExtractor:
             else:
                 all_structures_q3.append(struct)
 
-        return all_features, all_structures_q6, all_structures_q3
+        return all_features, all_structures_q6, all_structures_q3, peptide_lengths
 
 
     def aa_environment(self, aas_init):
