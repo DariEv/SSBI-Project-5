@@ -320,13 +320,21 @@ class FeatureExtractor:
                     for i in range(int(line[21:25]), int(line[33:37]) + 1):
                         parsed_structures.append([i, line[19], type])
                 if line[:6] == 'SHEET ':
-                    sheet_type = int(line[38:40])
+                    # Check if character for sheet type exists if not set sheet type to 99 and catch case below
+                    if line[38:40].strip() is not '':
+                        sheet_type = int(line[38:40])
+                    else:
+                        sheet_type = 99
+
                     if sheet_type == 1:     # parallel sheet
                         type = 4
                     elif sheet_type == -1:  # anti-parallel sheet
                         type = 5
                     if sheet_type == 0:
                         temp = line
+                    # Maybe add special catch case...
+                    # elif sheet_type == 99:
+                    #     pass
                     else:
                         if temp != '':
                             for i in range(int(temp[22:26]), int(temp[33:37]) + 1):
@@ -392,7 +400,6 @@ class FeatureExtractor:
     
                 if c_alpha_coord is not None and n_coord is not None:
                     break
-    
     
             phi_angle = dihedral_angle(residues[k]['C'].get_coord(), residues[k+1]['N'].get_coord(),
                                        residues[k+1]['CA'].get_coord(), residues[k+1]['C'].get_coord())
