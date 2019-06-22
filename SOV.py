@@ -1,23 +1,12 @@
 import pickle
-import collections
 import numpy as np
 from features_extractor import FeatureExtractor
 
-Q3 = [0, 1, 2]
-Q6 = [0, 1, 2, 3, 4, 5]
 
 FEATURES_FILE = 'Extracted_Features_small.pkl'
 
 
 def calculate_sov(actual_labels, predicted_labels):
-
-    # get q type
-
-    if 3 in predicted_labels or 4 in predicted_labels or 5 in predicted_labels:
-        q = Q6
-    else:
-        q = Q3
-    print(q)
 
     # open saved peptide lengths
 
@@ -29,22 +18,29 @@ def calculate_sov(actual_labels, predicted_labels):
 
     i = 0
     sovs = []
+    total_length = 0
+
     for l in lengths:
+
         predicted_per_peptide = predicted_labels[i:l]
         actual_per_peptide = actual_labels[i:l]
-        sovs = sovs + get_overlapped_segments(predicted_per_peptide, actual_per_peptide)
+
+        segments, segments_length = get_overlapped_segments(predicted_per_peptide, actual_per_peptide)
+        sovs = sovs + segments
+        total_length = total_length + segments_length
+
         i = l
 
     print(sovs)
+    sov = score_sov(sovs, total_length)
 
-    sov = 0
-
-    return 0.5
+    return sov
 
 
 def get_overlapped_segments(actual_labels, predicted_labels):
 
     segments = []
+    total_length = 0
 
     current_label = np.inf
     n = len(actual_labels)
@@ -100,8 +96,27 @@ def get_overlapped_segments(actual_labels, predicted_labels):
                                "l_predicted": l_predicted}
 
             segments.append(overlapped_pair)
+            total_length = total_length + l_predicted
 
-    return segments
+    return segments, total_length
+
+
+def score_sov(sovs, total_length):
+
+    score = 0
+
+    for o_lap_pair in sovs:
+        score = score + ((o_lap_pair['intersection'] + delta(o_lap_pair)) / o_lap_pair['union']) * o_lap_pair['l_predicted']
+
+    return score / total_length
+
+
+def delta(segment_pair):
+
+    return min([segment_pair['union'] - segment_pair['intersection'],
+                segment_pair['intersection'],
+                segment_pair['l_actual'] / 2,
+                segment_pair['l_predicted'] / 2])
 
 
 def main():
@@ -110,37 +125,33 @@ def main():
 
     with open(FEATURES_FILE, 'rb') as input:
         saved_features = pickle.load(input)
+        features = saved_features.normalized_features
         q6 = saved_features.labels_q6
         q3 = saved_features.labels_q3
         lengths = saved_features.peptide_lengths
 
-    #calculate_sov(q3, q3)
 
     #print(lengths)
-    print(q3)
-    print(q6)
+    #print(q3)
+    #print(q6)
 
-    sovs = calculate_sov(q3, q6)
-    #print(sovs)
+    sov = calculate_sov(q3, q3)
+    print(sov)
 
 
-    #### test CV
-    '''
+    # test CV
+    #'''
     from sklearn.dummy import DummyClassifier
     from sklearn.model_selection import cross_val_score
     from sklearn.metrics import make_scorer
 
-    X = [[1], [1], [1], [1], [1],
-         [1], [1], [1], [1], [1],
-         [1], [1], [1], [1], [1]]
-    y = [0, 1, 0, 1, 1,
-         0, 1, 1, 0, 1,
-         1, 0, 1, 1, 0]
+    X = features
+    y = q6
 
     svo_scorer = make_scorer(calculate_sov, greater_is_better=False)
 
     print(cross_val_score(DummyClassifier(), X, y,  scoring=svo_scorer, cv=5))
-    '''
+    #'''
 
 
 if __name__ == '__main__':
