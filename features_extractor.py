@@ -67,73 +67,81 @@ class FeatureExtractor:
         
         for f in os.listdir(self.path2dir):
 
+            print('Currently processing file:',f)
+
             # list of all residues
             residues = self.parse_pdb_file(f)
 
-            # get structures given in the PDB file
-            parsed_structures = self.parse_structures(self.path2dir+f)
-            structures = self.get_structures(residues, parsed_structures)
+            # Check if there is aas in the file
+            if residues:
+                # get structures given in the PDB file
+                parsed_structures = self.parse_structures(self.path2dir+f)
+                structures = self.get_structures(residues, parsed_structures)
 
-            # encode the residues in 20-bit vectors
-            aas_init = self.aas_init(residues)
+                # encode the residues in 20-bit vectors
+                aas_init = self.aas_init(residues)
 
-            aas_init = self.aa_environment(aas_init)
+                aas_init = self.aa_environment(aas_init)
 
-            ##############################################
-            angles, h_coords = self.get_initial_features(residues)
-            
-            h_bonds = h_bonds_calculator.get_bonds(residues, h_coords)
+                ##############################################
+                try:
+                    angles, h_coords = self.get_initial_features(residues)
+                except TypeError:
+                    print('Cannot calculate Hydrogens for all residues, skipping file:',f)
+                    continue
 
-            # get min and max h_bond value
-            for bond in h_bonds:
-                if np.max(bond) > self.max_h_bond:
-                    self.max_h_bond = np.max(bond)
+                h_bonds = h_bonds_calculator.get_bonds(residues, h_coords)
 
-                if np.min(bond) < self.min_h_bond:
-                    self.min_h_bond = np.min(bond)
-            ##############################
-            
-            envs, diversities, seg_lengths = self.get_environment_features(h_bonds)
+                # get min and max h_bond value
+                for bond in h_bonds:
+                    if np.max(bond) > self.max_h_bond:
+                        self.max_h_bond = np.max(bond)
 
-            # get min max envs, divs and seg_lengths
-            assert len(envs) == len(seg_lengths) and len(seg_lengths) == len(diversities)
-            for i in range(0, len(envs)):
-                if np.max(envs[i]) > self.max_env:
-                    self.max_env = np.max(envs[i])
+                    if np.min(bond) < self.min_h_bond:
+                        self.min_h_bond = np.min(bond)
+                ##############################
 
-                if np.min(envs[i]) < self.min_env:
-                    self.min_env = np.min(envs[i])
+                envs, diversities, seg_lengths = self.get_environment_features(h_bonds)
 
-                if np.max(diversities[i]) > self.max_diversity:
-                    self.max_diversity = np.max(diversities[i])
+                # get min max envs, divs and seg_lengths
+                assert len(envs) == len(seg_lengths) and len(seg_lengths) == len(diversities)
+                for i in range(0, len(envs)):
+                    if np.max(envs[i]) > self.max_env:
+                        self.max_env = np.max(envs[i])
 
-                if np.min(diversities[i]) < self.min_diversity:
-                    self.min_diversity = np.min(diversities[i])
+                    if np.min(envs[i]) < self.min_env:
+                        self.min_env = np.min(envs[i])
 
-                if np.max(seg_lengths[i]) > self.max_seg_length:
-                    self.max_seg_length = np.max(seg_lengths[i])
+                    if np.max(diversities[i]) > self.max_diversity:
+                        self.max_diversity = np.max(diversities[i])
 
-                if np.min(seg_lengths[i]) < self.min_seg_length:
-                    self.min_seg_length = np.min(seg_lengths[i])
-            ######################################################
+                    if np.min(diversities[i]) < self.min_diversity:
+                        self.min_diversity = np.min(diversities[i])
 
-            # feature vector: 
-            #[encoded residue name, isoelectric point (pI), hydrophobicity, phi, psi, distance (h-bonds), structure]
-            #features = list(zip(aas_init, features, h_bonds, envs, diversities))
-            #features = [i[0] + i[1] + [i[2]] + [i[3]] + [i[4]] for i in features]
+                    if np.max(seg_lengths[i]) > self.max_seg_length:
+                        self.max_seg_length = np.max(seg_lengths[i])
 
-            features = []
-            for i in range(0,len(aas_init)):
-                # Normal features
-                tmp_vec = np.append(np.concatenate((aas_init[i], np.array(angles[i])),axis=0),h_bonds[i])
-                tmp_vec = np.concatenate((tmp_vec, np.array(envs[i])),axis=0)
-                tmp_vec = np.append(tmp_vec, diversities[i])
-                tmp_vec = np.append(tmp_vec, seg_lengths[i])
-                features.append(tmp_vec)
+                    if np.min(seg_lengths[i]) < self.min_seg_length:
+                        self.min_seg_length = np.min(seg_lengths[i])
+                ######################################################
 
-            all_features = all_features + features
-            all_structures_q6 = all_structures_q6 + structures
-            peptide_lengths.append(sum(peptide_lengths) + len(all_features))
+                # feature vector:
+                #[encoded residue name, isoelectric point (pI), hydrophobicity, phi, psi, distance (h-bonds), structure]
+                #features = list(zip(aas_init, features, h_bonds, envs, diversities))
+                #features = [i[0] + i[1] + [i[2]] + [i[3]] + [i[4]] for i in features]
+
+                features = []
+                for i in range(0,len(aas_init)):
+                    # Normal features
+                    tmp_vec = np.append(np.concatenate((aas_init[i], np.array(angles[i])),axis=0),h_bonds[i])
+                    tmp_vec = np.concatenate((tmp_vec, np.array(envs[i])),axis=0)
+                    tmp_vec = np.append(tmp_vec, diversities[i])
+                    tmp_vec = np.append(tmp_vec, seg_lengths[i])
+                    features.append(tmp_vec)
+
+                all_features = all_features + features
+                all_structures_q6 = all_structures_q6 + structures
+                peptide_lengths.append(sum(peptide_lengths) + len(all_features))
 
             
         #print(len(all_features))
@@ -504,9 +512,10 @@ def dihedral_angle(c1, c2, c3, c4):
 
 def main():  
     
-    input_file = "supplementary_small/"
-    output_file = "Extracted_Features_small.pkl"
-    #output_file = "Extracted_Features.pkl"
+    #input_file = "supplementary_small/"
+    input_file = "supplementary/"
+    #output_file = "Extracted_Features_small.pkl"
+    output_file = "Extracted_Features.pkl"
 
 # =============================================================================
     with open(output_file, 'wb') as output:
