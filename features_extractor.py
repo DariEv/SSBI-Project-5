@@ -8,7 +8,15 @@ import pickle
 import h_bonds_calculator
 import ssbi_project_h_atoms
 
-# Feature Vector: Amino Acid, Amino Acid Environment (Avg), Phy, Psi, H-Bond, Env (21 values), diversity, segment length
+# Feature Vector (68 values):
+# Amino Acid (20 values),
+# Amino Acid Environment (Avg, 20 values),
+# pI (1 value), hydro phobicity (1 value)
+# Phy (1 value), Psi (1 value),
+# H-Bond (1 value),
+# Env (2*WINDOW_SIZE+1),
+# diversity (1 value),
+# segment length (1 value)
 
 WINDOW_SIZE = 10
 
@@ -21,15 +29,38 @@ class FeatureExtractor:
     
     def __init__(self, p = ""):
         self.path2dir = p
+
+        # Variables for normalization necessary
+        self.min_pI = 2.77
+        self.max_pI = 10.76
+
+        self.min_h_phob = -2.53
+        self.max_h_phob = 1.38
+
+        self.min_phi_psi = -180
+        self.max_phi_psi = 180
+
+        self.min_h_bond = np.inf
+        self.max_h_bond = -np.inf
+
+        self.min_env = np.inf
+        self.max_env = -np.inf
+
+        self.min_diversity = np.inf
+        self.max_diversity = -np.inf
+
+        self.min_seg_length = np.inf
+        self.max_seg_length = -np.inf
+        #######################################
         
-        self.features, self.labels_q6, self.labels_q3, self.peptide_lengths = self.get_features()
-        
+        self.features, self.labels_q6, self.labels_q3 = self.get_features()
+
+        self.normalized_features = self.__normalize()
         
     def get_features(self):
         
         all_features = []
         all_structures_q6 = []
-        peptide_lengths = []
         
         #  iterate through files
         
@@ -51,8 +82,39 @@ class FeatureExtractor:
             angles, h_coords = self.get_initial_features(residues)
             
             h_bonds = h_bonds_calculator.get_bonds(residues, h_coords)
+
+            # get min and max h_bond value
+            for bond in h_bonds:
+                if np.max(bond) > self.max_h_bond:
+                    self.max_h_bond = np.max(bond)
+
+                if np.min(bond) < self.min_h_bond:
+                    self.min_h_bond = np.min(bond)
+            ##############################
             
             envs, diversities, seg_lengths = self.get_environment_features(h_bonds)
+
+            # get min max envs, divs and seg_lengths
+            assert len(envs) == len(seg_lengths) and len(seg_lengths) == len(diversities)
+            for i in range(0, len(envs)):
+                if np.max(envs[i]) > self.max_env:
+                    self.max_env = np.max(envs[i])
+
+                if np.min(envs[i]) < self.min_env:
+                    self.min_env = np.min(envs[i])
+
+                if np.max(diversities[i]) > self.max_diversity:
+                    self.max_diversity = np.max(diversities[i])
+
+                if np.min(diversities[i]) < self.min_diversity:
+                    self.min_diversity = np.min(diversities[i])
+
+                if np.max(seg_lengths[i]) > self.max_seg_length:
+                    self.max_seg_length = np.max(seg_lengths[i])
+
+                if np.min(seg_lengths[i]) < self.min_seg_length:
+                    self.min_seg_length = np.min(seg_lengths[i])
+            ######################################################
 
             # feature vector: 
             #[encoded residue name, isoelectric point (pI), hydrophobicity, phi, psi, distance (h-bonds), structure]
@@ -61,6 +123,7 @@ class FeatureExtractor:
 
             features = []
             for i in range(0,len(aas_init)):
+                # Normal features
                 tmp_vec = np.append(np.concatenate((aas_init[i], np.array(angles[i])),axis=0),h_bonds[i])
                 tmp_vec = np.concatenate((tmp_vec, np.array(envs[i])),axis=0)
                 tmp_vec = np.append(tmp_vec, diversities[i])
@@ -69,10 +132,10 @@ class FeatureExtractor:
 
             all_features = all_features + features
             all_structures_q6 = all_structures_q6 + structures
-            peptide_lengths.append(sum(peptide_lengths) + len(features))
 
-        print(len(all_features))
-        print(len(all_structures_q6))
+            
+        #print(len(all_features))
+        #print(len(all_structures_q6))
 
         all_structures_q3 = []
         for struct in all_structures_q6:
@@ -83,7 +146,7 @@ class FeatureExtractor:
             else:
                 all_structures_q3.append(struct)
 
-        return all_features, all_structures_q6, all_structures_q3, peptide_lengths
+        return all_features, all_structures_q6, all_structures_q3
 
 
     def aa_environment(self, aas_init):
@@ -395,7 +458,26 @@ class FeatureExtractor:
             
         return envs, diversities, segment_lengths
 
+    def __normalize(self):
+        norm_feats = []
+        for feature in self.features:
+            norm_feats.append(self.__normalize_feature(feature))
 
+        return norm_feats
+
+    def __normalize_feature(self, feat):
+        feat_vec = feat[:40]
+        feat_vec = np.append(feat_vec, np.interp(feat[40:41], [self.min_pI, self.max_pI], [0,1]))
+        feat_vec = np.append(feat_vec, np.interp(feat[41:42], [self.min_h_phob, self.max_h_phob], [0,1]))
+        feat_vec = np.concatenate((feat_vec, np.interp(feat[42:44], [self.min_phi_psi, self.max_phi_psi], [0,1])), axis=0)
+        feat_vec = np.append(feat_vec, np.interp(feat[44:45], [self.min_h_bond, self.max_h_bond], [0,1]))
+        feat_vec = np.concatenate((feat_vec, np.interp(feat[45:-2], [self.min_env, self.max_env], [0,1])), axis=0)
+        feat_vec = np.append(feat_vec, np.interp(feat[-2], [self.min_diversity, self.max_diversity], [0,1]))
+        feat_vec = np.append(feat_vec, np.interp(feat[-1], [self.min_seg_length, self.max_seg_length], [0,1]))
+        return feat_vec
+
+
+# TODO: replace with PDB function                                           
 # Calculate dihedral angle
 def dihedral_angle(c1, c2, c3, c4):
 
@@ -421,24 +503,27 @@ def dihedral_angle(c1, c2, c3, c4):
 def main():  
     
     input_file = "supplementary_small/"
-    output_file = "Extracted_Features.pkl"
+    output_file = "Extracted_Features_small.pkl"
+    #output_file = "Extracted_Features.pkl"
 
-    # save features to file
-
+# =============================================================================
     with open(output_file, 'wb') as output:
 
         fe = FeatureExtractor(input_file)
         print("Extracting features for the files in:", fe.path2dir)
-        print("Write results in:")
+        print("Write results in:",output_file)
         pickle.dump(fe, output, pickle.HIGHEST_PROTOCOL)
+# =============================================================================
+        
         
     # open saved file
     
     with open(output_file, 'rb') as input:
         saved_features = pickle.load(input)
-        print(saved_features.features) 
-        print(saved_features.labels_q6)
-        print(saved_features.labels_q3)
+        print(saved_features.features[0])
+        print(saved_features.normalized_features[0])
+        #print(saved_features.labels_q6)
+        #print(saved_features.labels_q3)
    
     
 if __name__ == '__main__':
