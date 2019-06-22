@@ -148,7 +148,7 @@ def main():
     X = features
     y = q6
 
-    svo_scorer = make_scorer(calculate_sov, greater_is_better=False)
+    svo_scorer = make_scorer(calculate_sov, greater_is_better=True)
 
     print(cross_val_score(DummyClassifier(), X, y,  scoring=svo_scorer, cv=5))
     #'''
