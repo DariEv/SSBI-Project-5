@@ -73,7 +73,7 @@ class FeatureExtractor:
 
             print('Currently processing file: {}, ({}/200)'.format(f,file_number))
             file_number += 1
-            
+
             # list of all residues
             residues = self.parse_pdb_file(f)
 
@@ -547,12 +547,12 @@ def main():
     output_file = "Extracted_Features.pkl"
 
 # =============================================================================
-    with open(output_file, 'wb') as output:
-
-        fe = FeatureExtractor(input_file)
-        print("Extracting features for the files in:", fe.path2dir)
-        print("Write results in:",output_file)
-        pickle.dump(fe, output, pickle.HIGHEST_PROTOCOL)
+#     with open(output_file, 'wb') as output:
+#
+#         fe = FeatureExtractor(input_file)
+#         print("Extracting features for the files in:", fe.path2dir)
+#         print("Write results in:",output_file)
+#         pickle.dump(fe, output, pickle.HIGHEST_PROTOCOL)
 # =============================================================================
         
         
@@ -562,6 +562,10 @@ def main():
         saved_features = pickle.load(input)
         print(saved_features.features[0])
         print(saved_features.normalized_features[0])
+        missed_files = 0
+        for key, value in saved_features.filter_dict.items():
+            missed_files += len(value)
+        print('#Missed files:',missed_files)
         #print(saved_features.labels_q6)
         #print(saved_features.labels_q3)
    
