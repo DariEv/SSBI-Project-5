@@ -89,8 +89,17 @@ class FeatureExtractor:
                 except TypeError:
                     print('Cannot calculate Hydrogens for all residues, skipping file:',f)
                     continue
+                except KeyError:
+                    # Bsp: 1to2.pdb missing N somewhere!!!
+                    print('Missing atoms in structure -> Missing angles, skipping file:',f)
+                    continue
 
-                h_bonds = h_bonds_calculator.get_bonds(residues, h_coords)
+                try:
+                    h_bonds = h_bonds_calculator.get_bonds(residues, h_coords)
+                except ValueError:
+                    print('operands could not be broadcast together with shapes (3,) (0,), skipping file:', f)
+                    continue
+
 
                 # get min and max h_bond value
                 for bond in h_bonds:
@@ -400,7 +409,7 @@ class FeatureExtractor:
     
                 if c_alpha_coord is not None and n_coord is not None:
                     break
-    
+
             phi_angle = dihedral_angle(residues[k]['C'].get_coord(), residues[k+1]['N'].get_coord(),
                                        residues[k+1]['CA'].get_coord(), residues[k+1]['C'].get_coord())
     
@@ -525,12 +534,12 @@ def main():
     output_file = "Extracted_Features.pkl"
 
 # =============================================================================
-    with open(output_file, 'wb') as output:
-
-        fe = FeatureExtractor(input_file)
-        print("Extracting features for the files in:", fe.path2dir)
-        print("Write results in:",output_file)
-        pickle.dump(fe, output, pickle.HIGHEST_PROTOCOL)
+#     with open(output_file, 'wb') as output:
+#
+#         fe = FeatureExtractor(input_file)
+#         print("Extracting features for the files in:", fe.path2dir)
+#         print("Write results in:",output_file)
+#         pickle.dump(fe, output, pickle.HIGHEST_PROTOCOL)
 # =============================================================================
         
         

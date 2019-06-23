@@ -1,0 +1,8 @@
+- Approximation von H
+- Sobald eine unstimmigkeit in File -> ignoriert
+	- Fehlende residue die Hydrogen Berechnung verhindert (e.g. 1fzg.pdb)
+	- Fehlende residue die angle berechnung verhindert (1to2.pdb)
+	- Falsche shapes in calculate h_bonds (e.g. 2vwt.pdb)
+- Wenn sheet klasse 0 oder gar nicht gegeben einfach Klasse der nächsten Zeile übernehmen (e.g. 1hj9.pdb)
+- Bei Berechnung von H coords kann es sein, dass wurzel von einer negativen Zahl genommen wird -> Falsches ergebnis (e.g. 1s20.pdb)
+
