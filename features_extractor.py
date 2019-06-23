@@ -52,13 +52,16 @@ class FeatureExtractor:
         self.min_seg_length = np.inf
         self.max_seg_length = -np.inf
         #######################################
+
+        self.filter_dict = {'No Residues':[], 'Missing H':[], 'Missing Atoms':[], 'H Bond Error':[]}
         
         self.features, self.labels_q6, self.labels_q3, self.peptide_lengths = self.get_features()
 
         self.normalized_features = self.__normalize()
+
         
     def get_features(self):
-        
+
         all_features = []
         all_structures_q6 = []
         peptide_lengths = []
@@ -71,6 +74,11 @@ class FeatureExtractor:
 
             # list of all residues
             residues = self.parse_pdb_file(f)
+
+            ############### Get Files without residues
+            if not residues:
+                self.filter_dict['No Residues'].append(f)
+            ##########################################
 
             # Check if there is aas in the file
             if residues:
@@ -88,16 +96,19 @@ class FeatureExtractor:
                     angles, h_coords = self.get_initial_features(residues)
                 except TypeError:
                     print('Cannot calculate Hydrogens for all residues, skipping file:',f)
+                    self.filter_dict['Missing H'].append(f)
                     continue
                 except KeyError:
                     # Bsp: 1to2.pdb missing N somewhere!!!
                     print('Missing atoms in structure -> Missing angles, skipping file:',f)
+                    self.filter_dict['Missing Atoms'].append(f)
                     continue
 
                 try:
                     h_bonds = h_bonds_calculator.get_bonds(residues, h_coords)
                 except ValueError:
                     print('operands could not be broadcast together with shapes (3,) (0,), skipping file:', f)
+                    self.filter_dict['H Bond Error'].append(f)
                     continue
 
 
@@ -534,12 +545,12 @@ def main():
     output_file = "Extracted_Features.pkl"
 
 # =============================================================================
-#     with open(output_file, 'wb') as output:
-#
-#         fe = FeatureExtractor(input_file)
-#         print("Extracting features for the files in:", fe.path2dir)
-#         print("Write results in:",output_file)
-#         pickle.dump(fe, output, pickle.HIGHEST_PROTOCOL)
+    with open(output_file, 'wb') as output:
+
+        fe = FeatureExtractor(input_file)
+        print("Extracting features for the files in:", fe.path2dir)
+        print("Write results in:",output_file)
+        pickle.dump(fe, output, pickle.HIGHEST_PROTOCOL)
 # =============================================================================
         
         

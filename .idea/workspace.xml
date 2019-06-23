@@ -2,9 +2,6 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="5bc50715-0a95-459c-a087-441eb5ff91cc" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/Potentielle Fehlerquellen.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Extracted_Features.pkl" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/features_extractor.py" beforeDir="false" afterPath="$PROJECT_DIR$/features_extractor.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -18,8 +15,8 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/features_extractor.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="161">
-              <caret line="89" column="41" selection-start-line="89" selection-start-column="41" selection-end-line="89" selection-end-column="41" />
+            <state relative-caret-position="722">
+              <caret line="110" column="45" selection-start-line="110" selection-start-column="45" selection-end-line="110" selection-end-column="45" />
               <folding>
                 <element signature="e#0#21#0" expanded="true" />
               </folding>
@@ -209,7 +206,7 @@
       <workItem from="1561218467337" duration="16289000" />
       <workItem from="1561242060313" duration="8312000" />
       <workItem from="1561255315660" duration="14000" />
-      <workItem from="1561280782270" duration="601000" />
+      <workItem from="1561280782270" duration="981000" />
     </task>
     <task id="LOCAL-00001" summary="added peptide lengths to feature extractor">
       <created>1561238224683</created>
@@ -229,7 +226,7 @@
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="41762000" />
+    <option name="totallyTimeSpent" value="42142000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="-8" y="-8" width="1936" height="1056" extended-state="6" />
@@ -289,8 +286,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/features_extractor.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="161">
-          <caret line="89" column="41" selection-start-line="89" selection-start-column="41" selection-end-line="89" selection-end-column="41" />
+        <state relative-caret-position="722">
+          <caret line="110" column="45" selection-start-line="110" selection-start-column="45" selection-end-line="110" selection-end-column="45" />
           <folding>
             <element signature="e#0#21#0" expanded="true" />
           </folding>
