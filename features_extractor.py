@@ -65,13 +65,15 @@ class FeatureExtractor:
         all_features = []
         all_structures_q6 = []
         peptide_lengths = []
-        
+
+
+        file_number = 1
         #  iterate through files
-        
         for f in os.listdir(self.path2dir):
 
-            print('Currently processing file:',f)
-
+            print('Currently processing file: {}, ({}/200)'.format(f,file_number))
+            file_number += 1
+            
             # list of all residues
             residues = self.parse_pdb_file(f)
 
