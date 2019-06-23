@@ -541,10 +541,10 @@ def dihedral_angle(c1, c2, c3, c4):
 
 def main():  
     
-    #input_file = "supplementary_small/"
-    input_file = "supplementary/"
-    #output_file = "Extracted_Features_small.pkl"
-    output_file = "Extracted_Features.pkl"
+    input_file = "supplementary_small/"
+    #input_file = "supplementary/"
+    output_file = "Extracted_Features_small.pkl"
+    #output_file = "Extracted_Features.pkl"
 
 # =============================================================================
 #     with open(output_file, 'wb') as output:
