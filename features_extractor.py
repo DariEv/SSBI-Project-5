@@ -562,16 +562,16 @@ def main():
     
     input_file = "supplementary_small/"
     #input_file = "supplementary/"
-    output_file = "Extracted_Features_small.pkl"
-    #output_file = "Extracted_Features.pkl"
+    #output_file = "Extracted_Features_small.pkl"
+    output_file = "Extracted_Features.pkl"
 
 # =============================================================================
-    with open(output_file, 'wb') as output:
-
-        fe = FeatureExtractor(input_file)
-        print("Extracting features for the files in:", fe.path2dir)
-        print("Write results in:",output_file)
-        pickle.dump(fe, output, pickle.HIGHEST_PROTOCOL)
+#     with open(output_file, 'wb') as output:
+#
+#         fe = FeatureExtractor(input_file)
+#         print("Extracting features for the files in:", fe.path2dir)
+#         print("Write results in:",output_file)
+#         pickle.dump(fe, output, pickle.HIGHEST_PROTOCOL)
 # =============================================================================
         
         
@@ -581,14 +581,11 @@ def main():
         saved_features = pickle.load(input)
         print(saved_features.features[0])
         print(saved_features.normalized_features[0])
+        print(saved_features.filter_dict)
         missed_files = 0
         for key, value in saved_features.filter_dict.items():
             missed_files += len(value)
         print('#Missed files:',missed_files)
-        print(saved_features.local_features[0])
-        print(len(saved_features.local_features[0]))
-        #print(saved_features.labels_q6)
-        #print(saved_features.labels_q3)
    
     
 if __name__ == '__main__':

@@ -75,7 +75,7 @@ def main():
                          scoring=scoring, cv=4,
                          refit='Accuracy',
                          return_train_score=True,
-                         verbose=2)
+                         verbose=1)
 
     gs_q3.fit(X,y_q3)
     results_q3 = gs_q3.cv_results_
