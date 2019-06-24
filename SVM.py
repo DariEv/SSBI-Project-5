@@ -78,10 +78,6 @@ def main():
     gs_q3.fit(X, y_q3)
     results_q3 = gs_q3.cv_results_
 
-    print(results)
-    print("DDDDDDDDD")
-    print(results_q3)
-
     print()
     print('###############    Results of model on the q3 task\n')
     for metric in scoring.keys():
