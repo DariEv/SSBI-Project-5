@@ -36,8 +36,8 @@ def main():
     model = KNeighborsClassifier(algorithm='kd_tree')
 
     gs = GridSearchCV(model,
-                      param_grid={'n_neighbors': range(1,101,10),
-                                  #'leaf_size': range(10,31,10)
+                      param_grid={'n_neighbors': range(5,16,5),
+                                  'leaf_size': range(10,31,10)
                                   },
                       scoring=scoring, cv=4,
                       refit='Accuracy',
