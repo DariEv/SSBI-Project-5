@@ -13,7 +13,7 @@ from features_extractor import FeatureExtractor
 
 
 FEATURES_FILE = 'Extracted_Features.pkl'
-OUTPUT_GS_FILE = './best_models/KNN/knn_q6'
+OUTPUT_GS_FILE = './best_models/KNN/knn_q6.pkl'
 
 def main():
 
@@ -41,7 +41,8 @@ def main():
                                   },
                       scoring=scoring, cv=4,
                       refit='Accuracy',
-                      return_train_score=True)
+                      return_train_score=True,
+                      verbose=1)
 
     gs.fit(X,y)
     results = gs.cv_results_
@@ -67,7 +68,8 @@ def main():
                          param_grid=gs.best_params_,
                          scoring=scoring, cv=4,
                          refit='Accuracy',
-                         return_train_score=True)
+                         return_train_score=True,
+                         verbose=1)
 
     gs_q3.fit(X,y)
     results_q3 = gs_q3.cv_results_
