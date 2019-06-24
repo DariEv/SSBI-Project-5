@@ -81,14 +81,4 @@ def main():
 
 
 if __name__ == '__main__':
-    #main()
-
-    with open(OUTPUT_GS_FILE, 'rb') as gs_model:
-        gs_load = pickle.load(gs_model)
-
-
-    print(gs_load.best_params_)
-
-    scoring = {'Accuracy': 'accuracy', 'SOV': make_scorer(calculate_sov, greater_is_better=True)}
-    for metric in scoring.keys():
-        print('Best mean test {}: {}'.format(metric, gs_load.cv_results_['mean_test_{}'.format(metric)][gs_load.best_index_]))
+    main()

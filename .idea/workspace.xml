@@ -2,6 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="5bc50715-0a95-459c-a087-441eb5ff91cc" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/best_models/KNN/knn_q6" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/best_models/KNN/results.txt" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/k_nearest_neighbor.py" beforeDir="false" afterPath="$PROJECT_DIR$/k_nearest_neighbor.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -15,8 +17,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/features_extractor.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-76">
-              <caret line="554" column="58" selection-start-line="549" selection-start-column="5" selection-end-line="554" selection-end-column="58" />
+            <state relative-caret-position="399">
+              <caret line="48" column="35" lean-forward="true" selection-start-line="48" selection-start-column="35" selection-end-line="48" selection-end-column="35" />
               <folding>
                 <element signature="e#0#21#0" expanded="true" />
               </folding>
@@ -48,8 +50,8 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/k_nearest_neighbor.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="382">
-              <caret line="71" column="34" selection-start-line="71" selection-start-column="34" selection-end-line="71" selection-end-column="34" />
+            <state relative-caret-position="484">
+              <caret line="67" column="19" selection-start-line="67" selection-start-column="19" selection-end-line="67" selection-end-column="19" />
               <folding>
                 <element signature="e#0#36#0" expanded="true" />
               </folding>
@@ -257,7 +259,7 @@
       <workItem from="1561218467337" duration="16289000" />
       <workItem from="1561242060313" duration="8312000" />
       <workItem from="1561255315660" duration="14000" />
-      <workItem from="1561280782270" duration="23251000" />
+      <workItem from="1561280782270" duration="23691000" />
     </task>
     <task id="LOCAL-00001" summary="added peptide lengths to feature extractor">
       <created>1561238224683</created>
@@ -277,7 +279,7 @@
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="64412000" />
+    <option name="totallyTimeSpent" value="64852000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="-8" y="-8" width="1936" height="1056" extended-state="6" />
@@ -360,16 +362,6 @@
     <entry file="file://$PROJECT_DIR$/best_models/KNN/results.txt">
       <provider selected="true" editor-type-id="text-editor" />
     </entry>
-    <entry file="file://$PROJECT_DIR$/features_extractor.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-76">
-          <caret line="554" column="58" selection-start-line="549" selection-start-column="5" selection-end-line="554" selection-end-column="58" />
-          <folding>
-            <element signature="e#0#21#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/SOV.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="-2388">
@@ -377,10 +369,20 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/features_extractor.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="399">
+          <caret line="48" column="35" lean-forward="true" selection-start-line="48" selection-start-column="35" selection-end-line="48" selection-end-column="35" />
+          <folding>
+            <element signature="e#0#21#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/k_nearest_neighbor.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="382">
-          <caret line="71" column="34" selection-start-line="71" selection-start-column="34" selection-end-line="71" selection-end-column="34" />
+        <state relative-caret-position="484">
+          <caret line="67" column="19" selection-start-line="67" selection-start-column="19" selection-end-line="67" selection-end-column="19" />
           <folding>
             <element signature="e#0#36#0" expanded="true" />
           </folding>
