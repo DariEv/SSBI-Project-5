@@ -413,14 +413,16 @@ class FeatureExtractor:
             amino_acid2_ats = list(residues[k+1].get_atoms())
             c_alpha_coord = None
             n_coord = None
+            h_coord = None
             for at in amino_acid2_ats:
+                if at.get_name() == 'H':
+                    h_coord = at.get_coord()
                 if at.get_name() == 'N':
                     n_coord = at.get_coord()
-    
                 if at.get_name() == 'CA':
                     c_alpha_coord = at.get_coord()
     
-                if c_alpha_coord is not None and n_coord is not None:
+                if c_alpha_coord is not None and n_coord is not None and h_coord is not None:
                     break
 
             phi_angle = dihedral_angle(residues[k]['C'].get_coord(), residues[k+1]['N'].get_coord(),
@@ -434,10 +436,13 @@ class FeatureExtractor:
             features_per_res.append([phi_angle, psi_angle])
 
 
-            h_coord_per_res.append(ssbi_project_h_atoms.calculate_h(np.array(o_coord), 
-                                                                    np.array(c_coord), 
-                                                                    np.array(c_alpha_coord), 
-                                                                    np.array(n_coord)))
+            if h_coord is not None:
+                h_coord_per_res.append(h_coord)
+            else:
+                h_coord_per_res.append(ssbi_project_h_atoms.calculate_h(np.array(o_coord),
+                                                                        np.array(c_coord),
+                                                                        np.array(c_alpha_coord),
+                                                                        np.array(n_coord)))
             
         return features_per_res, h_coord_per_res
     
