@@ -3,7 +3,7 @@ import numpy as np
 from features_extractor import FeatureExtractor
 
 
-FEATURES_FILE = 'Extracted_Features_small.pkl'
+FEATURES_FILE = 'Extracted_Features.pkl'
 
 
 def calculate_sov(actual_labels, predicted_labels):
@@ -31,7 +31,7 @@ def calculate_sov(actual_labels, predicted_labels):
 
         i = l
 
-    print(sovs)
+    #print(sovs)
     sov = score_sov(sovs, total_length)
 
     return sov
