@@ -46,8 +46,8 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/k_nearest_neighbor.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="705">
-              <caret line="80" lean-forward="true" selection-start-line="80" selection-end-line="80" />
+            <state relative-caret-position="603">
+              <caret line="78" column="34" lean-forward="true" selection-start-line="78" selection-start-column="34" selection-end-line="78" selection-end-column="34" />
               <folding>
                 <element signature="e#0#36#0" expanded="true" />
               </folding>
@@ -250,7 +250,7 @@
       <workItem from="1561218467337" duration="16289000" />
       <workItem from="1561242060313" duration="8312000" />
       <workItem from="1561255315660" duration="14000" />
-      <workItem from="1561280782270" duration="24369000" />
+      <workItem from="1561280782270" duration="24807000" />
     </task>
     <task id="LOCAL-00001" summary="added peptide lengths to feature extractor">
       <created>1561238224683</created>
@@ -270,10 +270,11 @@
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="65530000" />
+    <option name="totallyTimeSpent" value="65968000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="-8" y="-8" width="1936" height="1056" extended-state="6" />
+    <editor active="true" />
     <layout>
       <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.16204691" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
@@ -371,8 +372,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/k_nearest_neighbor.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="705">
-          <caret line="80" lean-forward="true" selection-start-line="80" selection-end-line="80" />
+        <state relative-caret-position="603">
+          <caret line="78" column="34" lean-forward="true" selection-start-line="78" selection-start-column="34" selection-end-line="78" selection-end-column="34" />
           <folding>
             <element signature="e#0#36#0" expanded="true" />
           </folding>
