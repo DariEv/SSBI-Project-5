@@ -42,7 +42,7 @@ def main():
                       scoring=scoring, cv=4,
                       refit='Accuracy',
                       return_train_score=True,
-                      verbose=1)
+                      verbose=2)
 
     gs.fit(X,y)
     results = gs.cv_results_
@@ -62,14 +62,18 @@ def main():
 
     ###################################################################
 
+    best_parameters = {}
+    for k, v in gs.best_params_.items():
+        best_parameters[k] = np.array([v])
+
     # Compare best model on q3 Task
     model_q3 = KNeighborsClassifier(algorithm='kd_tree')
     gs_q3 = GridSearchCV(model_q3,
-                         param_grid=gs.best_params_,
+                         param_grid=best_parameters,
                          scoring=scoring, cv=4,
                          refit='Accuracy',
                          return_train_score=True,
-                         verbose=1)
+                         verbose=2)
 
     gs_q3.fit(X,y)
     results_q3 = gs_q3.cv_results_
