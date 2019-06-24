@@ -123,6 +123,7 @@ def main():
 
     # open saved file
 
+    '''
     with open(FEATURES_FILE, 'rb') as input:
         saved_features = pickle.load(input)
         features = saved_features.normalized_features
@@ -137,10 +138,11 @@ def main():
 
     sov = calculate_sov(q3, q3)
     print(sov)
+    '''
 
 
     # test CV
-    #'''
+    '''
     from sklearn.dummy import DummyClassifier
     from sklearn.model_selection import cross_val_score
     from sklearn.metrics import make_scorer
@@ -151,7 +153,7 @@ def main():
     svo_scorer = make_scorer(calculate_sov, greater_is_better=True)
 
     print(cross_val_score(DummyClassifier(), X, y,  scoring=svo_scorer, cv=5))
-    #'''
+    '''
 
 
 if __name__ == '__main__':
