@@ -13,6 +13,7 @@ from features_extractor import FeatureExtractor
 
 
 FEATURES_FILE = 'Extracted_Features.pkl'
+OUTPUT_GS_FILE = './best_models/KNN/knn_q6'
 
 def main():
 
@@ -36,7 +37,8 @@ def main():
 
     gs = GridSearchCV(model,
                       param_grid={'n_neighbors': range(1,101,10),
-                                  'leaf_size': range(10,31,10)},
+                                  #'leaf_size': range(10,31,10)
+                                  },
                       scoring=scoring, cv=4,
                       refit='Accuracy',
                       return_train_score=True)
@@ -51,6 +53,13 @@ def main():
     print(gs.best_params_)
     for metric in scoring.keys():
         print('Best mean test {}: {}'.format(metric, results['mean_test_{}'.format(metric)][gs.best_index_]))
+
+    ############## Save q6 for later evaluation #######################
+    with open(OUTPUT_GS_FILE, 'wb') as output:
+        print('SAVE GRID SEARCH OBJECT Q6')
+        pickle.dump(gs, output, pickle.HIGHEST_PROTOCOL)
+
+    ###################################################################
 
     # Compare best model on q3 Task
     model_q3 = KNeighborsClassifier(algorithm='kd_tree')
@@ -70,4 +79,14 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    #main()
+
+    with open(OUTPUT_GS_FILE, 'rb') as gs_model:
+        gs_load = pickle.load(gs_model)
+
+
+    print(gs_load.best_params_)
+
+    scoring = {'Accuracy': 'accuracy', 'SOV': make_scorer(calculate_sov, greater_is_better=True)}
+    for metric in scoring.keys():
+        print('Best mean test {}: {}'.format(metric, gs_load.cv_results_['mean_test_{}'.format(metric)][gs_load.best_index_]))
