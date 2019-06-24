@@ -59,6 +59,8 @@ class FeatureExtractor:
 
         self.normalized_features = self.__normalize()
 
+        self.local_features = self.__reduce_to_local()
+
         
     def get_features(self):
 
@@ -520,6 +522,18 @@ class FeatureExtractor:
         feat_vec = np.append(feat_vec, np.interp(feat[-1], [self.min_seg_length, self.max_seg_length], [0,1]))
         return feat_vec
 
+    def __reduce_to_local(self):
+        local_features = []
+        for feature in self.normalized_features:
+            local_features.append(self.__reduce_feature(feature))
+
+        return local_features
+
+    def __reduce_feature(self, feat):
+        feat_vec = feat[:20] # encoded AA
+        feat_vec = np.concatenate((feat_vec, feat[40:45])) # pI + h_phob + phi + psi + h_bond
+        return feat_vec
+
 
 # TODO: replace with PDB function                                           
 # Calculate dihedral angle
@@ -552,12 +566,12 @@ def main():
     #output_file = "Extracted_Features.pkl"
 
 # =============================================================================
-#     with open(output_file, 'wb') as output:
-#
-#         fe = FeatureExtractor(input_file)
-#         print("Extracting features for the files in:", fe.path2dir)
-#         print("Write results in:",output_file)
-#         pickle.dump(fe, output, pickle.HIGHEST_PROTOCOL)
+    with open(output_file, 'wb') as output:
+
+        fe = FeatureExtractor(input_file)
+        print("Extracting features for the files in:", fe.path2dir)
+        print("Write results in:",output_file)
+        pickle.dump(fe, output, pickle.HIGHEST_PROTOCOL)
 # =============================================================================
         
         
@@ -571,6 +585,8 @@ def main():
         for key, value in saved_features.filter_dict.items():
             missed_files += len(value)
         print('#Missed files:',missed_files)
+        print(saved_features.local_features[0])
+        print(len(saved_features.local_features[0]))
         #print(saved_features.labels_q6)
         #print(saved_features.labels_q3)
    
