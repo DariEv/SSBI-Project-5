@@ -1,11 +1,12 @@
+'''
+This file is used to evaluate saved models on unseen test data.
+'''
+
 import pickle
 
 from SOV import calculate_sov
 from features_extractor import FeatureExtractor
 from SOV import calculate_sov
-
-# This file is used to evaluate the performance of a saved pickle model on new unseen test data by calculating the
-# accuracy and the SOV score
 
 
 def main():

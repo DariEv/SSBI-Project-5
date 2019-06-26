@@ -1,6 +1,14 @@
+'''
+This file estimates the H-atom position for the given information
+    - 0.97 Angstrom N-H bond length
+    - 119 degrees angle of the C_alpha-N-H bonds
+    - planarity of the O=CN-H system
+'''
+
 from Bio.PDB import *
 import os
 import numpy as np
+
 
 AMINO_ACIDS = ['ALA', 'GLY', 'PHE', 'ILE', 'MET', 'LEU', 'PRO', 'VAL', 'ASP', 'GLU', 'LYS', 'ARG', 'SER', 'THR', 'TYR',
                'HIS', 'CYS', 'ASN', 'GLN', 'TRP']
@@ -8,64 +16,15 @@ AMINO_ACIDS = ['ALA', 'GLY', 'PHE', 'ILE', 'MET', 'LEU', 'PRO', 'VAL', 'ASP', 'G
 ATOMS = ['C', 'N', 'CA', 'O']
 
 
-def main():
-    file = r'D:\Florian\Dokumente\UniTuebingen\Semester2-SS19\Structure and Systems Bioinformatics\assignments\assignment3\supplementary\1axe.pdb'
-    pdb_parser = PDBParser(QUIET=True)
-    name = os.path.basename(file).split('.')[0]
-    structure = pdb_parser.get_structure(name, file)
-
-    residues = []
-    for model in structure:
-        for chain in model:
-            for residue in chain:
-                if residue.get_resname() in AMINO_ACIDS:
-                    residues.append(residue)
-        break
-
-    # Extract Amino Acid and Amino Acid one later
-    for k, amino_acid in enumerate(residues):
-        if k == len(residues)-1:
-            break
-        amino_acid1_ats = list(amino_acid.get_atoms())
-        o_coord = None
-        c_coord = None
-        for at in amino_acid1_ats:
-            if at.get_name() == 'O':
-                o_coord = at.get_coord()
-            if at.get_name() == 'C':
-                c_coord = at.get_coord()
-
-            if c_coord is not None and o_coord is not None:
-                break
-
-        amino_acid2_ats = list(residues[k+1].get_atoms())
-        c_alpha_coord = None
-        n_coord = None
-        for at in amino_acid2_ats:
-            if at.get_name() == 'N':
-                n_coord = at.get_coord()
-
-            if at.get_name() == 'CA':
-                c_alpha_coord = at.get_coord()
-
-            if c_alpha_coord is not None and n_coord is not None:
-                break
-
-        print(calculate_h(np.array(o_coord), np.array(c_coord), np.array(c_alpha_coord), np.array(n_coord)))
-        #break
-
-
+# This function solves the standard quadratic formula, since th problem can be reduced to that
 def solve_quadratic(a, b, c):
     x_1 = (-b + np.sqrt(b**2 - 4 * a * c))/(2*a)
     x_2 = (-b - np.sqrt(b**2 - 4 * a * c))/(2*a)
     return [x_1,x_2]
 
 
-def angle(v1, v2):
-    return np.arccos(np.dot(v1, v2) / (np.linalg.norm(v1) * np.linalg.norm(v2)))
-
-
 def calculate_h(o, c, ca, n):
+    # distance of the N-H bond as given by the task description
     dist_h_n = 0.97
 
     # Plane defined by O-C-N(-H)
@@ -91,13 +50,10 @@ def calculate_h(o, c, ca, n):
     # vector between c alpha and n can be interpreted as normal vector to second plane
     normal_2 = (vec_c_alpha_n/dist_c_alpha_n)*dist_c_alpha_n_prime
 
-    # c_prime is support vector to plane
+    # n_prime is support vector to plane
     n_prime = np.add(ca, normal_2)
 
     plane_2 = np.append(normal_2,np.dot(n_prime,normal_2))
-
-    #print(plane_1)
-    #print(plane_2)
 
     ###################################################################################
     # solve linear system
@@ -106,11 +62,6 @@ def calculate_h(o, c, ca, n):
 
     # get point on line -> defines line with direction vector
     support_point = np.linalg.solve(system,solution)
-    #print(support_point)
-
-    # Check if == 0 -> point lies in plane -> CAREFUL: NOT ALWAYS EXACTLY ZERO DUE TO ROUNDING ERRORS
-    #print(np.dot(plane_1[:3],support_point)-plane_1[3])
-    #print(np.dot(plane_2[:3],support_point)-plane_2[3])
 
     # direction vector of line -> cross between plane normals
     # Line between planes therefore fully defined by direction_vec and support_point!
@@ -128,38 +79,13 @@ def calculate_h(o, c, ca, n):
     elif not b == 0:
         solutions = [-m/b]
 
-    #print('Length direction vector: {}'.format(np.linalg.norm(direction_vec)))
-    # print(solutions)
-
     h_atoms = []
     if solutions is not None:
+        # if there are two solutions for the quadratic formula consider both as possible coordinates
         if len(solutions) == 2:
+            # Calculate actual §d point
             point_1 = support_point + solutions[0] * direction_vec
             point_2 = support_point + solutions[1] * direction_vec
-
-            ######## Check if points lie in planes -> 0
-            # print(np.dot(plane_1[:3], point_1)-plane_1[3])
-            # print(np.dot(plane_2[:3], point_1)-plane_2[3])
-            # print(np.dot(plane_1[:3], point_2) - plane_1[3])
-            # print(np.dot(plane_2[:3], point_2) - plane_2[3])
-            # print()
-
-            ######### Check Distance to N atom -> should be ~0.97A
-            # print('Distance to N point_1: {}'.format(np.linalg.norm(np.subtract(n, point_1))))
-            # print('Distance to N point_2: {}'.format(np.linalg.norm(np.subtract(n, point_2))))
-            # print()
-
-            ######### Check if angle == ~119°
-            # print(180-(180*angle(np.subtract(point_1, n), np.subtract(n, ca))/np.pi))
-            # print(180-(180*angle(np.subtract(point_2, n), np.subtract(n, ca))/np.pi))
-            # print()
-
-            ######### Get Distances to surrounding atoms
-            # print('Distance of point_1 to C: {}'.format(np.linalg.norm(np.subtract(point_1, c))))
-            # print('Distance of point_1 to O: {}'.format(np.linalg.norm(np.subtract(point_1, o))))
-            # print('Distance of point_2 to C: {}'.format(np.linalg.norm(np.subtract(point_2, c))))
-            # print('Distance of point_2 to O: {}'.format(np.linalg.norm(np.subtract(point_2, o))))
-            # print()
 
             # Only assume coordinates to be valid if the distance to the c is bigger than 1 and if the distance to the
             # o is bigger than 1
@@ -170,33 +96,14 @@ def calculate_h(o, c, ca, n):
                 h_atoms.append(point_2)
 
         else:
+            # Calculate actual 3d point
             point_1 = support_point + solutions[0] * direction_vec
-
-            ######### Check if point lies in planes
-            # print(np.dot(plane_1[:3], point_1) - plane_1[3])
-            # print(np.dot(plane_2[:3], point_1) - plane_2[3])
-            # print()
-
-            ######### Check Distance to N atom -> should be ~0.97A
-            # print('Distance to N point_1: {}'.format(np.linalg.norm(np.subtract(n, point_1))))
-            # print()
-
-            ######### Check if angle == ~119°
-            # print(180-(180*angle(np.subtract(point_1, n), np.subtract(n, ca))/np.pi))
-            # print()
-
-            ######### Get Distances to surrounding atoms
-            # print('Distance to C: {}'.format(np.linalg.norm(np.subtract(point_1,c))))
-            # print('Distance to O: {}'.format(np.linalg.norm(np.subtract(point_1,o))))
-            # print()
 
             # Only assume coordinates to be valid if the distance to the c is bigger than 1 and if the distance to the
             # o is bigger than 1
             if not np.linalg.norm(np.subtract(point_1, c)) < 1 and not np.linalg.norm(np.subtract(point_1, o)) < 1:
                 h_atoms.append(point_1)
 
+    # The list either contains both possible points or only one point if the other one can be discarded due to physical
+    # imposibilities
     return h_atoms
-
-
-if __name__ == '__main__':
-    main()
