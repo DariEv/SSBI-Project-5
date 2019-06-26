@@ -1,3 +1,8 @@
+'''
+This file is used to extract all feature vectors for each residue in a directory of given pdb files.
+These files are then saved in a pickle file to reduce
+'''
+
 from Bio.PDB import *
 import numpy as np
 import os
@@ -18,16 +23,26 @@ import ssbi_project_h_atoms
 # diversity (1 value),
 # segment length (1 value)
 
-WINDOW_SIZE = 10
 
+# defines the considered environment around the current residue
+WINDOW_SIZE = 10
 
 AMINO_ACIDS = ['ALA', 'GLY', 'PHE', 'ILE', 'MET', 'LEU', 'PRO', 'VAL', 'ASP', 'GLU', 'LYS', 'ARG', 'SER', 'THR', 'TYR',
                'HIS', 'CYS', 'ASN', 'GLN', 'TRP']
 
 
 class FeatureExtractor:
+    '''
+    This class implements the functionality of extracting all feature vectors from a directory of pdb files
+    '''
     
     def __init__(self, p = ""):
+        '''
+        Initialize the Feature Extractor object.
+        The fields defined in this function are later saved to a pickle file to enable faster training
+        :param p: Path to the directory containing the pdb files
+        '''
+
         self.path2dir = p
 
         # Variables for normalization necessary
@@ -40,6 +55,7 @@ class FeatureExtractor:
         self.min_phi_psi = -180
         self.max_phi_psi = 180
 
+        # Get initialized with the real values during the extraction of the features
         self.min_h_bond = np.inf
         self.max_h_bond = -np.inf
 
@@ -53,21 +69,24 @@ class FeatureExtractor:
         self.max_seg_length = -np.inf
         #######################################
 
+        # Contains all files ignored by the feature extractor due to several reasons
         self.filter_dict = {'No Residues':[], 'Missing H':[], 'Missing Atoms':[], 'H Bond Error':[]}
-        
+
         self.features, self.labels_q6, self.labels_q3, self.peptide_lengths = self.get_features()
 
+        # Contains the feature vectors, normalized to a range of [0,1]
         self.normalized_features = self.__normalize()
 
+        # Contains the feature vectors reduced to the local features
         self.local_features = self.__reduce_to_local()
 
-        
     def get_features(self):
-
+        '''
+        This function calculates the feature vectors, the labels and the peptide lengths (used for the SOV)
+        '''
         all_features = []
         all_structures_q6 = []
         peptide_lengths = []
-
 
         file_number = 1
         #  iterate through files
@@ -93,9 +112,11 @@ class FeatureExtractor:
                 # encode the residues in 20-bit vectors
                 aas_init = self.aas_init(residues)
 
+                # get the environment averages
                 aas_init = self.aa_environment(aas_init)
 
                 ##############################################
+                # Catch all possible cases that make a file unusable and save it to the filter_dict
                 try:
                     angles, h_coords = self.get_initial_features(residues)
                 except TypeError:
@@ -116,7 +137,7 @@ class FeatureExtractor:
                     continue
 
 
-                # get min and max h_bond value
+                # get min and max h_bond value for normalization
                 for bond in h_bonds:
                     if np.max(bond) > self.max_h_bond:
                         self.max_h_bond = np.max(bond)
@@ -127,7 +148,7 @@ class FeatureExtractor:
 
                 envs, diversities, seg_lengths = self.get_environment_features(h_bonds)
 
-                # get min max envs, divs and seg_lengths
+                # get min max envs, divs and seg_lengths for normalization
                 assert len(envs) == len(seg_lengths) and len(seg_lengths) == len(diversities)
                 for i in range(0, len(envs)):
                     if np.max(envs[i]) > self.max_env:
@@ -149,28 +170,24 @@ class FeatureExtractor:
                         self.min_seg_length = np.min(seg_lengths[i])
                 ######################################################
 
-                # feature vector:
-                #[encoded residue name, isoelectric point (pI), hydrophobicity, phi, psi, distance (h-bonds), structure]
-                #features = list(zip(aas_init, features, h_bonds, envs, diversities))
-                #features = [i[0] + i[1] + [i[2]] + [i[3]] + [i[4]] for i in features]
-
                 features = []
                 for i in range(0,len(aas_init)):
-                    # Normal features
+                    # Concatenate the individual features to one feature vector
                     tmp_vec = np.append(np.concatenate((aas_init[i], np.array(angles[i])),axis=0),h_bonds[i])
                     tmp_vec = np.concatenate((tmp_vec, np.array(envs[i])),axis=0)
                     tmp_vec = np.append(tmp_vec, diversities[i])
                     tmp_vec = np.append(tmp_vec, seg_lengths[i])
                     features.append(tmp_vec)
 
+                # add the feature vector to the list containing all feature vectors already extracted from the directory
+                # of pdb files
                 all_features = all_features + features
                 all_structures_q6 = all_structures_q6 + structures
                 peptide_lengths.append(sum(peptide_lengths) + len(all_features))
 
-            
-        #print(len(all_features))
-        #print(len(all_structures_q6))
-
+        # iterate over the list containing the structure labels and reduce it to only q3 labels
+        # This means combining the individual helix classes to one helix class and
+        # combining the individual sheet classes to one sheet class
         all_structures_q3 = []
         for struct in all_structures_q6:
             if struct in [1,2,3]:
@@ -186,19 +203,25 @@ class FeatureExtractor:
     def aa_environment(self, aas_init):
         '''
         Expects a list of feature vectors, where each vector contains the 20 bit AA encoded features and the
-        hydrophobicity and iso-electric point
-        :param aas_init:
-        :return: average neighborhood
+        hydrophobicity and iso-electric point.
+        Calculates the average of all one hot encoded feature vectors in a given window. This is representative of the
+        abundance of each amino acid in this window.
+        When the window cannot be fully used, since the current amino acid is close to the beginning or end of the
+        structure we only consider the amino acids we can actually pack into the window.
+
+        :return: list of all feature vectors with the added average environment feature
         '''
 
         aas = []
 
+        # for each amino acid in a file iterate through the feature list and grab the encoded amino acids
         for i, amino in enumerate(aas_init):
             if i >= WINDOW_SIZE:
                 window = aas_init[i-WINDOW_SIZE:i+WINDOW_SIZE+1]
             else:
                 window = aas_init[:i+WINDOW_SIZE+1]
 
+            # Calculate the average
             sum = np.zeros((20))
             for aa in window:
                 sum = np.add(sum, aa[:20])
@@ -208,11 +231,19 @@ class FeatureExtractor:
 
         return aas
 
-
     def aas_init(self, residues):
+        '''
+        This function encodes the first features of the feature vector namely the amino acid itself and local properties
+        isoelectric point and hydrophobicity.
+
+        :param residues: List of residues to be encoded.
+        :return: List of feature vectors containing the encoded amino acid and the local features isoelectric point and
+                    hydrophobicity
+        '''
 
         aas_init = []
 
+        # iterate through the list of residues and encode each residue with one hot encoding
         for residue in [r.get_resname() for r in residues]:
 
             aacode = []
@@ -300,13 +331,18 @@ class FeatureExtractor:
                 pI = 5.89
                 h_phob = 0.81
 
-            #aas_init.append(aacode + [pI] + [h_phob])
+            # append newly encoded residue to the list
             aas_init.append(np.append(np.append(np.array(aacode), pI), h_phob))
 
         return aas_init
-            
-            
+
     def parse_pdb_file(self, file):
+        '''
+        This function parses a given pdb file and returns the list of all residues contained in the structure
+
+        :param file: path to the pdb file
+        :return: list of residues in the pdb file
+        '''
         
         pdb_parser = PDBParser(QUIET=True)
         name = os.path.basename(file).split('.')[0]
@@ -322,11 +358,15 @@ class FeatureExtractor:
         
         return residues
 
-
     def parse_structures(self, file):
+        '''
+        This function takes a pdb file and returns the labels of all secondary structures encoded in it (Q6).
+
+        :param file: path to pdb file
+        :return: list of labels for each residue
+        '''
 
         with open(file) as f:
-
             parsed_structures = []
 
             temp = ''
@@ -348,6 +388,8 @@ class FeatureExtractor:
                     if line[38:40].strip() is not '':
                         sheet_type = int(line[38:40])
                     else:
+                        # initialize sheet_type with dummy value, that it will be treated like a sheet were no label
+                        # is given
                         sheet_type = 99
 
                     if sheet_type == 1:     # parallel sheet
@@ -356,9 +398,6 @@ class FeatureExtractor:
                         type = 5
                     if sheet_type == 0:
                         temp = line
-                    # Maybe add special catch case...
-                    # elif sheet_type == 99:
-                    #     pass
                     else:
                         if temp != '':
                             for i in range(int(temp[22:26]), int(temp[33:37]) + 1):
