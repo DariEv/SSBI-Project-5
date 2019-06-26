@@ -15,8 +15,8 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/features_extractor.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="525">
-              <caret line="391" column="26" selection-start-line="391" selection-start-column="26" selection-end-line="391" selection-end-column="26" />
+            <state relative-caret-position="423">
+              <caret line="611" column="63" selection-start-line="611" selection-start-column="63" selection-end-line="611" selection-end-column="63" />
               <folding>
                 <element signature="e#0#21#0" expanded="true" />
               </folding>
@@ -64,7 +64,7 @@
         <entry file="file://$PROJECT_DIR$/best_models/KNN/Results.txt">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="187">
-              <caret line="11" lean-forward="true" selection-start-line="11" selection-end-line="11" />
+              <caret line="11" selection-start-line="11" selection-end-line="11" />
             </state>
           </provider>
         </entry>
@@ -126,6 +126,7 @@
       <find>print</find>
       <find>calculat</find>
       <find>angle</find>
+      <find>get_stru</find>
     </findStrings>
   </component>
   <component name="Git.Settings">
@@ -340,7 +341,7 @@
       <workItem from="1561280782270" duration="37300000" />
       <workItem from="1561482209646" duration="308000" />
       <workItem from="1561499233213" duration="1937000" />
-      <workItem from="1561544106458" duration="16160000" />
+      <workItem from="1561544106458" duration="17468000" />
     </task>
     <task id="LOCAL-00001" summary="added peptide lengths to feature extractor">
       <created>1561238224683</created>
@@ -368,7 +369,7 @@
     </history-entry>
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="96866000" />
+    <option name="totallyTimeSpent" value="98174000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="-8" y="-8" width="1936" height="1056" extended-state="6" />
@@ -484,7 +485,7 @@
     <entry file="file://$PROJECT_DIR$/best_models/KNN/Results.txt">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="187">
-          <caret line="11" lean-forward="true" selection-start-line="11" selection-end-line="11" />
+          <caret line="11" selection-start-line="11" selection-end-line="11" />
         </state>
       </provider>
     </entry>
@@ -510,8 +511,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/features_extractor.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="525">
-          <caret line="391" column="26" selection-start-line="391" selection-start-column="26" selection-end-line="391" selection-end-column="26" />
+        <state relative-caret-position="423">
+          <caret line="611" column="63" selection-start-line="611" selection-start-column="63" selection-end-line="611" selection-end-column="63" />
           <folding>
             <element signature="e#0#21#0" expanded="true" />
           </folding>

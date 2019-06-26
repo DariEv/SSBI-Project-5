@@ -399,6 +399,7 @@ class FeatureExtractor:
                     if sheet_type == 0:
                         temp = line
                     else:
+                        # If no label is given assign the label of the following strand
                         if temp != '':
                             for i in range(int(temp[22:26]), int(temp[33:37]) + 1):
                                 parsed_structures.append([i, temp[21], type])
@@ -408,9 +409,7 @@ class FeatureExtractor:
 
         return parsed_structures
 
-
     def get_structures(self, residues, parsed_structures):
-
         structures = []
 
         for k, amino_acid in enumerate(residues):
@@ -425,9 +424,15 @@ class FeatureExtractor:
                 structures.append(0)
 
         return structures
-    
-    
+
     def get_initial_features(self, residues):
+        '''
+        This function returns initial features for a residue, namely the torsion angles, and the coords of the H on
+        the Nitrogen of the residue
+
+        :param residues: List of the residues in the file
+        :return: torsion angles and hcoords for feature
+        '''
         
         # save the H coordinates in list
         h_coord_per_res = []
@@ -450,7 +455,8 @@ class FeatureExtractor:
     
                 if c_coord is not None and o_coord is not None:
                     break
-    
+
+            # extract relevant residues for the calculation of the angles and the h_coordinate of the neighboring residue
             amino_acid2_ats = list(residues[k+1].get_atoms())
             c_alpha_coord = None
             n_coord = None
@@ -466,17 +472,22 @@ class FeatureExtractor:
                 if c_alpha_coord is not None and n_coord is not None and h_coord is not None:
                     break
 
+            # calculate the phi torsion angle
             phi_angle = dihedral_angle(residues[k]['C'].get_coord(), residues[k+1]['N'].get_coord(),
                                        residues[k+1]['CA'].get_coord(), residues[k+1]['C'].get_coord())
-    
+
+            # calculate the psi torsion angle
             psi_angle = dihedral_angle(residues[k]['N'].get_coord(), residues[k]['CA'].get_coord(),
                                        residues[k]['C'].get_coord(), residues[k+1]['N'].get_coord())
 
+            # if it is the first residue in the list angles cannot be calculated, therefore resort to adding the angles
+            # of the second residue for the first one, otherwise some dummy values would have to be added
             if k == 0:
                 features_per_res.append([phi_angle, psi_angle])
             features_per_res.append([phi_angle, psi_angle])
 
-
+            #  if the given protein structure has a high enough resolution extract the H coordinates directly from the
+            #  file, otherwise estimate the positions with the given information
             if h_coord is not None:
                 h_coord_per_res.append(h_coord)
             else:
@@ -544,6 +555,11 @@ class FeatureExtractor:
         return envs, diversities, segment_lengths
 
     def __normalize(self):
+        '''
+        Iterate through the feature list
+
+        :return: return the feature list with normalized features
+        '''
         norm_feats = []
         for feature in self.features:
             norm_feats.append(self.__normalize_feature(feature))
@@ -551,17 +567,40 @@ class FeatureExtractor:
         return norm_feats
 
     def __normalize_feature(self, feat):
+        '''
+        Normalize each feature of the vector individually, otherwise a small value like hydrophobicity would be normalized
+        to a value close to zero because of a high torsion angle.
+
+        :param feat: feature vector
+        :return: normalized feature vector
+        '''
+
+        # The first encoded information about the environment and the encoded amino acid do not have to be normalized,
+        # since they are already in range [0,1]
         feat_vec = feat[:40]
+        # normalize the isoelectric point value
         feat_vec = np.append(feat_vec, np.interp(feat[40:41], [self.min_pI, self.max_pI], [0,1]))
+        #  normalize the hydrophobicity
         feat_vec = np.append(feat_vec, np.interp(feat[41:42], [self.min_h_phob, self.max_h_phob], [0,1]))
+        # normalize phi and psi values
         feat_vec = np.concatenate((feat_vec, np.interp(feat[42:44], [self.min_phi_psi, self.max_phi_psi], [0,1])), axis=0)
+        # normalize the h bond distance
         feat_vec = np.append(feat_vec, np.interp(feat[44:45], [self.min_h_bond, self.max_h_bond], [0,1]))
+        # normalize the environment values
         feat_vec = np.concatenate((feat_vec, np.interp(feat[45:-2], [self.min_env, self.max_env], [0,1])), axis=0)
+        # normalize the diversity values
         feat_vec = np.append(feat_vec, np.interp(feat[-2], [self.min_diversity, self.max_diversity], [0,1]))
+        # normalize the segment length value
         feat_vec = np.append(feat_vec, np.interp(feat[-1], [self.min_seg_length, self.max_seg_length], [0,1]))
         return feat_vec
 
     def __reduce_to_local(self):
+        '''
+        Iterate through normalized feature list and reduce each feature to its local features (Amino acid, pI,
+        Hydro phobicity, torsion angles and h-bond)
+
+        :return: Feature vector list with features reduced to the local features.
+        '''
         local_features = []
         for feature in self.normalized_features:
             local_features.append(self.__reduce_feature(feature))
@@ -569,6 +608,12 @@ class FeatureExtractor:
         return local_features
 
     def __reduce_feature(self, feat):
+        '''
+        For a given feature vector reduce it to local features.
+
+        :param feat:
+        :return:
+        '''
         feat_vec = feat[:20] # encoded AA
         feat_vec = np.concatenate((feat_vec, feat[40:45])) # pI + h_phob + phi + psi + h_bond
         return feat_vec
@@ -607,6 +652,7 @@ def main():
     output_file = "Extracted_Features_test.pkl"
 
 # =============================================================================
+    # save the extracted features of a given directory to a pickle file
     with open(output_file, 'wb') as output:
 
         fe = FeatureExtractor(input_file)
@@ -617,7 +663,7 @@ def main():
         
         
     # open saved file
-    
+    # check the contents if everything is ok
     with open(output_file, 'rb') as input:
         saved_features = pickle.load(input)
         print(saved_features.features[0])
