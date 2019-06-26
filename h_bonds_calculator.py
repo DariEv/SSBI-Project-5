@@ -1,7 +1,7 @@
 from Bio.PDB import *
 import numpy as np
 
-
+# important constants
 __q_plus__ = 0.42
 __q_minus__ = 0.2
 __threshold__ = -0.5 
@@ -15,29 +15,37 @@ def get_bonds(residues, h_coord):
     
     energy = np.zeros((n_res, n_res))
     h_bonds = np.zeros(n_res)
-    
+
+    # iterate though all pairs with at least 2 residue in between
     for i in range(n_res):
         for j in range(i + 3, n_res):
             
             res1 = residues[i]
             res2 = residues[j]
+
+            # check if residue contain required atoms
             atoms_present = (res1.has_id("O") or res1.has_id("C")) and res2.has_id("N")
             
             if atoms_present:
+                # distances between atoms
                 r_on = res1["O"] - res2["N"]
                 r_ch = calculate_distance(res1["C"], h_coord[j-1])
                 r_oh = calculate_distance(res1["O"], h_coord[j-1])
                 r_cn = res1["C"] - res2["N"]
                 energy[i][j] = get_energy(r_on, r_ch, r_oh, r_cn)
-                energy[j][i] = energy[i][j]
+                energy[j][i] = energy[i][j] # fill triangular matrix
+
                 #print("d", r_on, r_ch, r_oh, r_cn)
-        
+
+        # for each row get min E below threshold
         k = np.argmin(energy[i])
         if energy[i][k] < __threshold__:
             h_bonds[i] = abs(i - k)
 
     return h_bonds
 
+
+# apply function from lecture
 
 def get_energy(r_on, r_ch, r_oh, r_cn):
     

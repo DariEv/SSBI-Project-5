@@ -3,8 +3,8 @@ import numpy as np
 from features_extractor import FeatureExtractor
 
 
-#FEATURES_FILE = 'Extracted_Features.pkl'
-FEATURES_FILE = 'Extracted_Features_test.pkl'
+# access to features file is required for getting peptide sequence lengths
+FEATURES_FILE = 'Extracted_Features.pkl'
 
 
 def calculate_sov(actual_labels, predicted_labels):
@@ -15,7 +15,7 @@ def calculate_sov(actual_labels, predicted_labels):
         saved_features = pickle.load(input)
         lengths = saved_features.peptide_lengths
 
-    # iterate through peptides
+    # iterate through peptides, extract overlapped segments
 
     i = 0
     sovs = []
@@ -23,16 +23,19 @@ def calculate_sov(actual_labels, predicted_labels):
 
     for l in lengths:
 
+        # get labels for current peptide
         predicted_per_peptide = predicted_labels[i:l]
         actual_per_peptide = actual_labels[i:l]
 
         segments, segments_length = get_overlapped_segments(predicted_per_peptide, actual_per_peptide)
+
+        # concat lists of overlapped segments
         sovs = sovs + segments
         total_length = total_length + segments_length
 
         i = l
 
-    #print(sovs)
+    # calculate resulting score
     sov = score_sov(sovs, total_length)
 
     return sov
@@ -43,17 +46,21 @@ def get_overlapped_segments(actual_labels, predicted_labels):
     segments = []
     total_length = 0
 
-    current_label = np.inf
+    current_label = np.inf # label of previously detected overlapped segment
     n = len(actual_labels)
 
+    # iterate through actual labels
     for i, label_actual in enumerate(actual_labels):
 
+        # we are in the already detected overlap
         if label_actual == current_label:
             continue
 
+        # detected overlap is finished
         if label_actual != current_label:
             current_label = np.inf
 
+        # overlap is found
         if label_actual == predicted_labels[i]:
 
             current_label = label_actual
@@ -90,6 +97,7 @@ def get_overlapped_segments(actual_labels, predicted_labels):
                     l_predicted = l_predicted + 1
                 k = k + 1
 
+            # save all needed info
             overlapped_pair = {"label": current_label,
                                "union": union_length,
                                "intersection": intersection_length,
@@ -101,6 +109,8 @@ def get_overlapped_segments(actual_labels, predicted_labels):
 
     return segments, total_length
 
+
+# apply formula from the lecture
 
 def score_sov(sovs, total_length):
 
@@ -121,6 +131,8 @@ def delta(segment_pair):
 
 
 def main():
+
+    # FOR TESTING
 
     # open saved file
 
