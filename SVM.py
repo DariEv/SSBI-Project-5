@@ -1,20 +1,22 @@
 from sklearn.model_selection import GridSearchCV
 from sklearn import svm
 from sklearn.metrics import make_scorer
+from features_extractor import FeatureExtractor
+from SOV import calculate_sov
 
 import pickle
 import os
 import numpy as np
-from features_extractor import FeatureExtractor
-from SOV import calculate_sov
 
-FEATURES_FILE = 'Extracted_Features_small.pkl'
+# paths to input and output
+FEATURES_FILE = 'Extracted_Features.pkl'
 OUTPUT_GS_FILE_Q6 = './best_models/SVM/svm_q6.pkl'
 OUTPUT_GS_FILE_Q3 = './best_models/SVM/svm_q3.pkl'
 
 
 def main():
 
+    # check if feature file exists
     if not os.path.isfile(FEATURES_FILE):
         print('The feature file cannot be loaded -> Exiting!')
         return
@@ -24,6 +26,7 @@ def main():
     with open(FEATURES_FILE, 'rb') as input:
         saved_features = pickle.load(input)
         features = saved_features.normalized_features
+        #features = saved_features.local_features
         q6 = saved_features.labels_q6
         q3 = saved_features.labels_q3
 
@@ -31,9 +34,11 @@ def main():
     y_q3 = np.array(q3)
     y_q6 = np.array(q6)
 
+    # add custom scoring method SVO
     scoring = {'Accuracy': 'accuracy', 'SOV': make_scorer(calculate_sov, greater_is_better=True)}
 
-    parameters = {'kernel': ('linear', 'rbf'), 'C': [1, 10, 100]}
+    parameters = {'kernel': ('linear', 'rbf'), 'C': [1, 10]}
+
     svc = svm.SVC(gamma="scale")
     clf = GridSearchCV(svc, parameters,
                        scoring=scoring,
@@ -93,17 +98,34 @@ def main():
 
 if __name__ == '__main__':
 
-    print("WARNING: CHECK INPUT FILE IN SOV !!!")
     main()
 
     '''
+    scoring = {'Accuracy': 'accuracy', 'SOV': make_scorer(calculate_sov, greater_is_better=True)}
+
     with open(OUTPUT_GS_FILE_Q3, 'rb') as inputQ3:
         q3 = pickle.load(inputQ3)
-        print(q3.cv_results_)
+        results = q3.cv_results_
 
-    print("FFFFFFFFFFFFFFF")
+        print('###############   Q3: Best CV Results\n')
+        print(q3.best_estimator_)
+        print(q3.best_score_)
+        print(q3.best_params_)
+        for metric in scoring.keys():
+            print('Best mean test {}: {}'.format(metric, results['mean_test_{}'.format(metric)][q3.best_index_]))
+
+    print("----------------------------")
 
     with open(OUTPUT_GS_FILE_Q6, 'rb') as inputQ6:
         q6 = pickle.load(inputQ6)
-        print(q6.cv_results_)
+        #print(q6.cv_results_)
+
+        results_q6 = q6.cv_results_
+
+        print('###############  Q6: Best CV Results\n')
+        print(q6.best_estimator_)
+        print(q6.best_score_)
+        print(q6.best_params_)
+        for metric in scoring.keys():
+            print('Best mean test {}: {}'.format(metric, results_q6['mean_test_{}'.format(metric)][q6.best_index_]))
     '''
