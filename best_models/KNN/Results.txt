@@ -1,0 +1,38 @@
+Results of the KNN solving the task with all features (knn_q3.pkl, knn_q6.pkl)
+
+###############   Best CV Results Q6
+
+KNeighborsClassifier(algorithm='kd_tree', leaf_size=10, metric='minkowski',
+           metric_params=None, n_jobs=None, n_neighbors=10, p=2,
+           weights='uniform')
+0.6801694486789591
+{'leaf_size': 10, 'n_neighbors': 10}
+Best mean test Accuracy: 0.6801694486789591
+Best mean test SOV: 0.85476397711013
+
+
+###############    Results of model on the q3 task
+
+Best mean test Accuracy: 0.7341678093472549
+Best mean test SOV: 0.9582050940044327
+
+
+----------------------------------------------------------------------------------------------------------------
+
+Results of the KNN solving the task with only local features (knn_q3_local.pkl, knn_q6_local.pkl)
+
+###############   Best CV Results
+
+KNeighborsClassifier(algorithm='kd_tree', leaf_size=10, metric='minkowski',
+           metric_params=None, n_jobs=None, n_neighbors=15, p=2,
+           weights='uniform')
+0.634965259956642
+{'leaf_size': 10, 'n_neighbors': 15}
+Best mean test Accuracy: 0.634965259956642
+Best mean test SOV: 0.8339645030995507
+
+
+###############    Results of model on the q3 task
+
+Best mean test Accuracy: 0.7110486360607012
+Best mean test SOV: 0.9635401641347402

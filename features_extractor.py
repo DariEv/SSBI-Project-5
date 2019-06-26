@@ -581,7 +581,7 @@ def main():
         saved_features = pickle.load(input)
         print(saved_features.features[0])
         print(saved_features.normalized_features[0])
-        print(saved_features.filter_dict)
+        print(saved_features.local_features)
         missed_files = 0
         for key, value in saved_features.filter_dict.items():
             missed_files += len(value)

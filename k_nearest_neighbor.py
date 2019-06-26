@@ -11,10 +11,12 @@ import pickle
 from SOV import calculate_sov
 from features_extractor import FeatureExtractor
 
-#FEATURES_FILE = 'Extracted_Features.pkl'
-FEATURES_FILE = 'Extracted_Features_small.pkl'
-OUTPUT_GS_FILE_Q6 = './best_models/KNN/knn_q6.pkl'
-OUTPUT_GS_FILE_Q3 = './best_models/KNN/knn_q3.pkl'
+FEATURES_FILE = 'Extracted_Features.pkl'
+#FEATURES_FILE = 'Extracted_Features_small.pkl'
+#OUTPUT_GS_FILE_Q6 = './best_models/KNN/knn_q6.pkl'
+OUTPUT_GS_FILE_Q6 = './best_models/KNN/knn_q6_local.pkl'
+#OUTPUT_GS_FILE_Q3 = './best_models/KNN/knn_q3.pkl'
+OUTPUT_GS_FILE_Q3 = './best_models/KNN/knn_q3_local.pkl'
 
 def main():
 
@@ -24,7 +26,8 @@ def main():
 
     with open(FEATURES_FILE, 'rb') as input:
         saved_features = pickle.load(input)
-        features = saved_features.normalized_features
+        #features = saved_features.normalized_features
+        features = saved_features.local_features
         q6 = saved_features.labels_q6
         q3 = saved_features.labels_q3
         lengths = saved_features.peptide_lengths
