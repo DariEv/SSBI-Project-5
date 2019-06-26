@@ -28,5 +28,6 @@ def main():
 
         print(calculate_sov(prediction, fe.labels_q3))
 
+
 if __name__ == '__main__':
     main()
