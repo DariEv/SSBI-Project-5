@@ -560,18 +560,20 @@ def dihedral_angle(c1, c2, c3, c4):
 
 def main():  
     
-    input_file = "supplementary_small/"
+    #input_file = "supplementary_small/"
     #input_file = "supplementary/"
+    input_file = "supplementary_test/"
     #output_file = "Extracted_Features_small.pkl"
-    output_file = "Extracted_Features.pkl"
+    #output_file = "Extracted_Features.pkl"
+    output_file = "Extracted_Features_test.pkl"
 
 # =============================================================================
-#     with open(output_file, 'wb') as output:
-#
-#         fe = FeatureExtractor(input_file)
-#         print("Extracting features for the files in:", fe.path2dir)
-#         print("Write results in:",output_file)
-#         pickle.dump(fe, output, pickle.HIGHEST_PROTOCOL)
+    with open(output_file, 'wb') as output:
+
+        fe = FeatureExtractor(input_file)
+        print("Extracting features for the files in:", fe.path2dir)
+        print("Write results in:",output_file)
+        pickle.dump(fe, output, pickle.HIGHEST_PROTOCOL)
 # =============================================================================
         
         
