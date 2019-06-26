@@ -1,3 +1,7 @@
+'''
+Implementation of the employed k-Nearest-Neighbor approach
+'''
+
 from matplotlib import pyplot as plt
 
 from sklearn.model_selection import cross_val_score, GridSearchCV
@@ -20,10 +24,12 @@ OUTPUT_GS_FILE_Q3 = './best_models/KNN/knn_q3_local.pkl'
 
 def main():
 
+    # check if the feature file exists, otherwise training can not start
     if not os.path.isfile(FEATURES_FILE):
         print('The feature file cannot be loaded -> Exiting!')
         return
 
+    # extract the features and labels used for training
     with open(FEATURES_FILE, 'rb') as input:
         saved_features = pickle.load(input)
         #features = saved_features.normalized_features
@@ -32,14 +38,19 @@ def main():
         q3 = saved_features.labels_q3
         lengths = saved_features.peptide_lengths
 
+    # define the values the cross validation should evaluate the models on
     scoring = {'Accuracy': 'accuracy', 'SOV': make_scorer(calculate_sov, greater_is_better=True)}
 
+    # extract the features
     X = np.array(features)
+    # extract the q6 and q3 labels
     y_q6 = np.array(q6)
     y_q3 = np.array(q3)
 
+    # define the model
     model = KNeighborsClassifier(algorithm='kd_tree')
 
+    # Build the grid search object and define the possible hyperparameter combinations it should evaluate
     gs = GridSearchCV(model,
                       param_grid={'n_neighbors': range(5,16,5),
                                   'leaf_size': range(10,31,10)
@@ -48,10 +59,11 @@ def main():
                       refit='Accuracy',
                       return_train_score=True,
                       verbose=2)
-
+    # Apply the gridsearch cross validation
     gs.fit(X,y_q6)
     results = gs.cv_results_
 
+    # Print the results of the best estimator to the console
     print()
     print('###############   Best CV Results\n')
     print(gs.best_estimator_)
@@ -83,6 +95,7 @@ def main():
     gs_q3.fit(X,y_q3)
     results_q3 = gs_q3.cv_results_
 
+    # print the results of the best estimator to the console
     print()
     print('###############    Results of model on the q3 task\n')
     for metric in scoring.keys():
