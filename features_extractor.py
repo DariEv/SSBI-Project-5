@@ -19,7 +19,7 @@ import ssbi_project_h_atoms
 # pI (1 value), hydro phobicity (1 value)
 # Phy (1 value), Psi (1 value),
 # H-Bond (1 value),
-# Env (2*WINDOW_SIZE+1),
+# Env (2*WINDOW_SIZE+1 values),
 # diversity (1 value),
 # segment length (1 value)
 
@@ -500,12 +500,19 @@ class FeatureExtractor:
     
     
     def get_environment_features(self, h_bonds):
+
+        '''
+            This function returns environment features based on calculated H-bonds
+
+            :param h_bonds: List of the distances between residues connected by h-bond
+            :return: list of three env. features for each residue: env, diversity, segment_length.
+
+            env = vector of h_bond distances around the residue
+            diversities = number of different h_bond distances around the residue
+            segment_lengths = sum of distances to the left and right 0's
+        '''
         
         n = len(h_bonds)
-        
-        # env = verctor of h_bond distances around the residue
-        # diversities = number of different h_bond distances around the residue
-        # segment_lengths = sum of distances to the left and right 0's
         
         envs = []  
         diversities = []
@@ -515,26 +522,31 @@ class FeatureExtractor:
             
             left_range = i - WINDOW_SIZE - 1
             right_range = i + WINDOW_SIZE
-            
+
+            # 0's containers chain begin and end
             left_offset = []
             right_offset = []
             
-            
+            # env: get surrounding distances,
+            # fill with 0's is index out of range
             if left_range < 0:
                 left_offset = np.zeros(abs(left_range))            
                 left_range = 0
             if right_range > n:
                 right_offset = np.zeros(right_range - n + 1)               
                 right_range = n - 1
-                
+
+            # env = left_offset + WINDOW + right_offset
             env = np.append(left_offset, h_bonds[left_range : right_range])
             env = np.append(env, right_offset)
-                
+
+            # diversity feature = number of different structures in environment
             diversity = len(collections.Counter(env))
             
-            # legment length feature
+            # segment length feature
             segment_length = 0
-            
+
+            # iterate to next 0
             if bond != 0:
 
                 # to the left 
