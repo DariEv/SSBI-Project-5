@@ -660,8 +660,8 @@ def main():
     #input_file = "supplementary/"
     input_file = "supplementary_test/"
     #output_file = "Extracted_Features_small.pkl"
-    #output_file = "Extracted_Features.pkl"
-    output_file = "Extracted_Features_test.pkl"
+    output_file = "Extracted_Features.pkl"
+    #output_file = "Extracted_Features_test.pkl"
 
 # =============================================================================
     # save the extracted features of a given directory to a pickle file
